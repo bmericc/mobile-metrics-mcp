@@ -5,8 +5,10 @@ namespace App\Stores\AppStore;
 use App\Models\RawReport;
 use App\Models\StoreApp;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Analytics Reports API akışı:
@@ -35,13 +37,26 @@ class AnalyticsReports
             }
         }
 
-        $this->client->post('/v1/analyticsReportRequests', [
-            'data' => [
-                'type' => 'analyticsReportRequests',
-                'attributes' => ['accessType' => 'ONGOING'],
-                'relationships' => ['app' => ['data' => ['type' => 'apps', 'id' => $app->external_id]]],
-            ],
-        ]);
+        try {
+            $this->client->post('/v1/analyticsReportRequests', [
+                'data' => [
+                    'type' => 'analyticsReportRequests',
+                    'attributes' => ['accessType' => 'ONGOING'],
+                    'relationships' => ['app' => ['data' => ['type' => 'apps', 'id' => $app->external_id]]],
+                ],
+            ]);
+        } catch (RequestException $e) {
+            if ($e->response->status() === 403) {
+                throw new RuntimeException(
+                    'App Store analitik raporu henüz açılmamış ve bu anahtar açamıyor: rapor isteğini uygulama başına bir kez '
+                    .'Admin rolünde bir API anahtarı açabilir. Hesaba geçici olarak Admin anahtarı yükleyip senkronize edin, '
+                    .'sonra dar yetkili anahtara geri dönün.',
+                    previous: $e,
+                );
+            }
+
+            throw $e;
+        }
 
         return null;
     }
