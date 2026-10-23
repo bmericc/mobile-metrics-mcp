@@ -12,6 +12,9 @@ class CreateStoreAccount extends CreateRecord
 {
     protected static string $resource = StoreAccountResource::class;
 
+    // \"Oluştur & yeni oluştur\" butonu gizlenir; kayıt sonrası listeye/düzenlemeye dönülür.
+    protected static bool $canCreateAnother = false;
+
     protected function afterCreate(): void
     {
         if (app(VerifyStoreAccount::class)($this->record)) {
