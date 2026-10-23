@@ -155,6 +155,23 @@ class AppStoreCollectorTest extends TestCase
         $this->assertFalse(RawReport::where('path', 'like', '%/sales/2026-10-22.tsv')->exists());
     }
 
+    public function test_new_analytics_request_without_reports_yet_uses_sales_reports(): void
+    {
+        $this->account->update(['credentials' => [...$this->account->credentials, 'vendor_number' => '81234567']]);
+        $report = "Product Type Identifier\tUnits\tCountry Code\tApple Identifier\n1\t3\tDE\t6400000001\n";
+        Http::fake([
+            self::API.'/v1/apps/6400000001/analyticsReportRequests*' => Http::response(['data' => [['id' => 'req-1', 'attributes' => []]]]),
+            self::API.'/v1/analyticsReportRequests/req-1/reports*' => Http::response(['data' => []]),
+            self::API.'/v1/salesReports*' => fn (Request $request) => str_contains(urldecode($request->url()), 'filter[reportDate]=2026-10-18')
+                ? Http::response(gzencode($report))
+                : Http::response([], 404),
+        ]);
+
+        $rows = collect(app(AppStoreCollector::class)->fetchMetrics($this->storeApp, CarbonPeriod::create('2026-10-17', '2026-10-22')));
+
+        $this->assertEquals(3.0, $rows->where('country', 'ZZ')->where('metric', 'installs')->sum('value'));
+    }
+
     public function test_forbidden_analytics_without_vendor_number_explains_options(): void
     {
         Http::fake([

@@ -106,6 +106,11 @@ class AppStoreCollector implements StoreCollector
             }
         }
 
+        // Yeni açılan istekte Apple'ın ilk raporları 1-2 gün sürüyor; bu arada satış raporu idare eder.
+        if ($totals === [] && SalesReports::vendorNumber($app->storeAccount)) {
+            return $this->salesRows($app, $from, $to);
+        }
+
         return $this->toRows($totals);
     }
 
