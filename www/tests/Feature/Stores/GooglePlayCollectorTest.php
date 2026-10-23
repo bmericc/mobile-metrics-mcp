@@ -129,7 +129,11 @@ class GooglePlayCollectorTest extends TestCase
             'external_id' => 'com.acme.other_app',
             'name' => 'Other',
         ]);
-        $this->objects = ['stats/installs/installs_com.acme.other_app_202610_overview.csv' => ''];
+        $this->objects = [
+            'stats/installs/installs_com.acme.other_app_202610_overview.csv' => '',
+            // Başka hesaba aktarılmış uygulamanın eski raporu sahiplik saymaz.
+            'stats/installs/installs_com.acme.transferred_202501_overview.csv' => '',
+        ];
         $this->fakeGoogle();
 
         (new SyncStoreAccount($this->account))->handle(app(StoreRegistry::class));
@@ -137,6 +141,7 @@ class GooglePlayCollectorTest extends TestCase
         $this->assertSame($this->account->id, $moved->fresh()->store_account_id);
         $this->assertSame('Other', $moved->fresh()->name);
         $this->assertSame(1, StoreApp::where('external_id', 'com.acme.other_app')->count());
+        $this->assertFalse(StoreApp::where('external_id', 'com.acme.transferred')->exists());
 
         // Bucket'sız paylaşımlı kayıt, sahiplenilmiş uygulamaları geri almaz.
         (new SyncStoreAccount($shared->fresh()))->handle(app(StoreRegistry::class));

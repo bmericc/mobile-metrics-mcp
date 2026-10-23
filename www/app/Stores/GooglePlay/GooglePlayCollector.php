@@ -97,11 +97,14 @@ class GooglePlayCollector implements StoreCollector
         } while ($query['pageToken']);
 
         if ($client->bucket()) {
-            // Geliştirici hesabının uygulamaları = bucket'ında raporu olan paketler.
+            // Geliştirici hesabının uygulamaları = bucket'ında güncel raporu olan paketler. Başka hesaba
+            // aktarılan uygulamanın eski ayları eski bucket'ta kalıyor; yalnızca son iki ay sayılır ki
+            // uygulama iki hesap arasında gidip gelmesin.
             $apps = [];
+            $since = now()->subMonthNoOverflow()->format('Ym');
 
             foreach ((new BulkReports($client))->objects('stats/installs/installs_') as $object) {
-                if (preg_match('#^stats/installs/installs_(.+)_\d{6}_overview\.csv$#', $object['name'], $match)) {
+                if (preg_match('#^stats/installs/installs_(.+)_(\d{6})_overview\.csv$#', $object['name'], $match) && $match[2] >= $since) {
                     $apps[$match[1]] = $names[$match[1]] ?? $match[1];
                 }
             }
