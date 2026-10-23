@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             // Giriş paneller dışında, /login sayfasında sosyal hesaplarla yapılır.
-            ->brandName('Store Metrics Admin')
+            ->brandName('Kalehost Metrics Admin')
             ->colors([
                 'primary' => Color::Amber,
             ])

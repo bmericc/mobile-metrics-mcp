@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * credentials içeriği mağazaya göre değişir:
@@ -20,6 +21,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class StoreAccount extends Model
 {
     use BelongsToWorkspace;
+
+    protected static function booted(): void
+    {
+        // Uygulamalar, metrikler ve yorumlar FK cascade ile silinir; diskteki ham raporlar da gitmeli
+        // (gizlilik politikası: hesap silinince ondan çekilen veriler silinir).
+        static::deleted(function (StoreAccount $account) {
+            Storage::disk('local')->deleteDirectory("raw-reports/{$account->store->value}/{$account->id}");
+        });
+    }
 
     protected function casts(): array
     {

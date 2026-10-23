@@ -1,4 +1,4 @@
-# kalehost-metrics
+# Kalehost Metrics
 
 Google Play, Apple App Store ve Huawei AppGallery'de yayınlanan uygulamaların istatistiklerini
 (kurulum, kaldırma, aktif cihaz, gelir, crash/ANR, puan) ve kullanıcı yorumlarını toplayıp
@@ -34,6 +34,7 @@ kalehost-metrics/
   `ScopesToUser` ile yalnızca token sahibinin workspace'lerini görür:
   `list-apps`, `get-metrics`, `compare-periods`, `top-countries`, `get-reviews`, `sync-status`.
 - **Paneller:** `/app/{workspace}` kullanıcı paneli, `/admin` sistem paneli (`users.is_admin`).
+- **Herkese açık sayfalar:** `/` tanıtım, `/privacy` + `/terms` (TR), `/en/privacy` + `/en/terms` (EN).
 
 ## Durum
 

@@ -7,7 +7,13 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-Route::redirect('/', '/app');
+Route::view('/', 'landing')->name('home');
+
+// Hukuki metinler: Huawei/Google başvurularında ve giriş sayfasında linklenir.
+Route::view('/privacy', 'legal.privacy-tr', ['lang' => 'tr'])->name('legal.privacy');
+Route::view('/terms', 'legal.terms-tr', ['lang' => 'tr'])->name('legal.terms');
+Route::view('/en/privacy', 'legal.privacy-en', ['lang' => 'en'])->name('legal.privacy.en');
+Route::view('/en/terms', 'legal.terms-en', ['lang' => 'en'])->name('legal.terms.en');
 
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');

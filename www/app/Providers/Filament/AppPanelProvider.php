@@ -29,7 +29,7 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->default()
-            ->brandName('Store Metrics')
+            ->brandName('Kalehost Metrics')
             ->tenant(Workspace::class, slugAttribute: 'slug')
             ->tenantRegistration(RegisterWorkspace::class)
             ->colors([
