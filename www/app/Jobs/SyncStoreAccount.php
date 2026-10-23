@@ -25,7 +25,9 @@ class SyncStoreAccount implements ShouldQueue
             $count = 0;
 
             foreach ($collector->discoverApps($this->account) as $descriptor) {
-                $this->account->storeApps()->updateOrCreate(
+                // Ad yalnızca ilk keşifte yazılır; panelde değiştirilen ad korunur
+                // (Google Play adı vermiyor, paket adıyla başlar).
+                $this->account->storeApps()->firstOrCreate(
                     ['external_id' => $descriptor->externalId],
                     [
                         'workspace_id' => $this->account->workspace_id,

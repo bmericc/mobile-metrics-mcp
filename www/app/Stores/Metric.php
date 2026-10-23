@@ -24,6 +24,7 @@ final class Metric
 
     public const CRASHES = 'crashes';
 
+    /** 0-1 arası kesir (0.0123 = %1,23). */
     public const CRASH_RATE = 'crash_rate';
 
     public const ANR_RATE = 'anr_rate';
