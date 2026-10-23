@@ -118,13 +118,13 @@ class AnalyticsReports
         Storage::disk('local')->put($path, $content);
 
         return RawReport::updateOrCreate(
-            ['store_account_id' => $app->store_account_id, 'checksum' => hash('sha256', $content)],
+            ['store_account_id' => $app->store_account_id, 'path' => $path],
             [
+                'checksum' => hash('sha256', $content),
                 'store_app_id' => $app->id,
                 'source' => 'app_store:'.$reportName,
                 'period_start' => $processingDate,
                 'period_end' => $processingDate,
-                'path' => $path,
                 'processed_at' => null,
                 'error' => null,
             ],

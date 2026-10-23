@@ -4,6 +4,7 @@ namespace App\Stores\GooglePlay;
 
 use App\Models\RawReport;
 use App\Models\StoreApp;
+use App\Stores\Csv;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 
@@ -58,7 +59,7 @@ class BulkReports
      */
     public function rows(RawReport $raw): iterable
     {
-        $lines = preg_split('/\r\n|\n|\r/', $this->decode(Storage::disk('local')->get($raw->path)));
+        $lines = preg_split('/\r\n|\n|\r/', Csv::decode(Storage::disk('local')->get($raw->path)));
         $header = null;
 
         foreach ($lines as $line) {
@@ -85,7 +86,7 @@ class BulkReports
      */
     public function header(RawReport $raw): array
     {
-        $first = strtok($this->decode(Storage::disk('local')->get($raw->path)), "\r\n");
+        $first = strtok(Csv::decode(Storage::disk('local')->get($raw->path)), "\r\n");
 
         return array_map('trim', str_getcsv((string) $first, ',', '"', ''));
     }
@@ -117,29 +118,16 @@ class BulkReports
         Storage::disk('local')->put($path, $content);
 
         return RawReport::updateOrCreate(
-            ['store_account_id' => $app->store_account_id, 'checksum' => hash('sha256', $content)],
+            ['store_account_id' => $app->store_account_id, 'path' => $path],
             [
+                'checksum' => hash('sha256', $content),
                 'store_app_id' => $app->id,
                 'source' => 'google_play:'.$object['name'],
                 'period_start' => $month->startOfMonth(),
                 'period_end' => $month->endOfMonth(),
-                'path' => $path,
                 'processed_at' => null,
                 'error' => null,
             ],
         );
-    }
-
-    private function decode(string $content): string
-    {
-        if (str_starts_with($content, "\xFF\xFE")) {
-            return mb_convert_encoding(substr($content, 2), 'UTF-8', 'UTF-16LE');
-        }
-
-        if (str_starts_with($content, "\xFE\xFF")) {
-            return mb_convert_encoding(substr($content, 2), 'UTF-8', 'UTF-16BE');
-        }
-
-        return str_starts_with($content, "\xEF\xBB\xBF") ? substr($content, 3) : $content;
     }
 }

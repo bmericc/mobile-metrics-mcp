@@ -37,8 +37,16 @@ kalehost-metrics/
 
 ## Durum
 
-İskelet hazır. Mağaza adaptörleri henüz stub (`RuntimeException`); sıradaki iş her
-mağazanın `verify / discoverApps / fetchMetrics / fetchReviews` metodlarını yazmak.
+Üç mağaza adaptörü yazıldı ve sahte HTTP yanıtlarıyla test edildi; gerçek hesaplarla henüz denenmedi.
+
+| Mağaza | Metrikler | Yorumlar | Bilinen eksik |
+|---|---|---|---|
+| App Store | Analytics Reports (Standard) | customerReviews | Gelir (Sales reports) yok |
+| Google Play | GCS bulk raporlar + Reporting API (crash/ANR oranı) | reviews.list (son 7 gün) | Gelir (earnings zip) yok |
+| AppGallery | appDownloadExport (günlük toplam + gün gün ülke) | Comments API (ülke listesi ve site gerekli) | Gelir yok; uygulamalar paket adı listesinden bulunur |
+
+Ham rapor dosyaları `storage/app/private/raw-reports` altında saklanır; sütun adı uyuşmazlığında
+sync açık hatayla durur ve gelen sütun listesini `raw_reports.error` alanına yazar.
 
 ## Yerel geliştirme
 

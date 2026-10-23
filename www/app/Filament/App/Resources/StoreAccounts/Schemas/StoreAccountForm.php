@@ -63,6 +63,19 @@ class StoreAccountForm
                             ->label('Client secret')
                             ->password()
                             ->required($requiredOnCreate),
+                        Textarea::make('credentials.package_names')
+                            ->label('Paket adları')
+                            ->helperText('AppGallery uygulama listelemiyor; virgül veya satırla ayırın.')
+                            ->rows(3)
+                            ->required($requiredOnCreate),
+                        Select::make('credentials.review_site')
+                            ->label('Yorum sitesi')
+                            ->options(['cn' => 'Çin', 'de' => 'Avrupa (Almanya)', 'sg' => 'Asya-Afrika-Latin Amerika (Singapur)', 'ru' => 'Rusya'])
+                            ->helperText('Yorum API\'si yalnızca aynı siteye bağlı ülkeleri birlikte sorgulayabiliyor.'),
+                        TextInput::make('credentials.review_countries')
+                            ->label('Yorum ülkeleri')
+                            ->placeholder('TR,DE,FR')
+                            ->helperText('Boş bırakılırsa yorumlar senkronize edilmez.'),
                     ]),
             ]);
     }

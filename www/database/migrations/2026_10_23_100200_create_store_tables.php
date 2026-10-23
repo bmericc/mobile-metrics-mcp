@@ -93,7 +93,8 @@ return new class extends Migration
             $table->text('error')->nullable();
             $table->timestamps();
 
-            $table->unique(['store_account_id', 'checksum']);
+            // Aynı içerik (ör. boş gün raporu) farklı yollarda olabilir; kimlik yoldur.
+            $table->unique(['store_account_id', 'path']);
         });
 
         Schema::create('sync_runs', function (Blueprint $table) {
