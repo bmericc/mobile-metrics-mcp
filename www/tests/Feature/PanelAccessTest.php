@@ -23,8 +23,13 @@ class PanelAccessTest extends TestCase
 
     public function test_guest_is_sent_to_social_login(): void
     {
+        config(['services.google.client_id' => 'g', 'services.apple.client_id' => null, 'services.huawei.client_id' => 'h']);
+
         $this->get('/app')->assertRedirect('/login');
-        $this->get('/login')->assertOk()->assertSee('Google ile giriş yap')->assertSee('Huawei ID ile giriş yap');
+        $this->get('/login')->assertOk()
+            ->assertSee('Google ile giriş yap')
+            ->assertSee('Huawei ID ile giriş yap')
+            ->assertDontSee('Apple ile giriş yap');
     }
 
     public function test_member_can_open_workspace_pages(): void

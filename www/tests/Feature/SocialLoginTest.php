@@ -42,15 +42,35 @@ class SocialLoginTest extends TestCase
         auth()->logout();
 
         $this->fakeProvider('apple', 'a-1', 'ada@example.com');
-        $this->post('/auth/apple/callback')->assertRedirect('/app');
+        $this->get('/auth/apple/callback')->assertRedirect('/app');
 
         $this->assertSame(1, User::count());
         $this->assertEqualsCanonicalizing(['google', 'apple'], User::first()->socialIdentities->pluck('provider')->all());
         $this->assertCount(1, User::first()->workspaces);
     }
 
-    public function test_unknown_provider_is_rejected(): void
+    public function test_unknown_or_unconfigured_provider_is_rejected(): void
     {
+        config(['services.huawei.client_id' => null]);
+
         $this->get('/auth/facebook/redirect')->assertNotFound();
+        $this->get('/auth/huawei/redirect')->assertNotFound();
+    }
+
+    public function test_apple_form_post_is_bounced_to_get_without_touching_the_session(): void
+    {
+        $response = $this->post('/auth/apple/callback', [
+            'code' => 'c-123',
+            'state' => 's-456',
+            'user' => '{"name":{"firstName":"Ada"}}',
+            'ignored' => 'x',
+        ]);
+
+        $response->assertStatus(303)->assertCookieMissing(config('session.cookie'));
+        $location = $response->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+        $this->assertStringEndsWith('/auth/apple/callback?'.parse_url($location, PHP_URL_QUERY), $location);
+        $this->assertSame(['code' => 'c-123', 'state' => 's-456', 'user' => '{"name":{"firstName":"Ada"}}'], $query);
     }
 }

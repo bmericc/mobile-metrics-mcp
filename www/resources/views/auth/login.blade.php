@@ -7,8 +7,12 @@
     <p class="muted">Devam etmek için giriş yap</p>
 
     <div class="stack">
-        <a class="btn" href="{{ route('social.redirect', 'google') }}">Google ile giriş yap</a>
-        <a class="btn" href="{{ route('social.redirect', 'apple') }}">Apple ile giriş yap</a>
-        <a class="btn" href="{{ route('social.redirect', 'huawei') }}">Huawei ID ile giriş yap</a>
+        @forelse (\App\Http\Controllers\Auth\SocialLoginController::enabledProviders() as $provider)
+            <a class="btn" href="{{ route('social.redirect', $provider) }}">
+                {{ \App\Http\Controllers\Auth\SocialLoginController::LABELS[$provider] }} ile giriş yap
+            </a>
+        @empty
+            <p class="muted">Henüz bir giriş sağlayıcısı yapılandırılmadı.</p>
+        @endforelse
     </div>
 @endsection

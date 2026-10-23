@@ -15,9 +15,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // NPM + Cloudflare arkasında; https şeması ve gerçek istemci IP'si proxy başlıklarından okunur.
         $middleware->trustProxies(at: '*');
-
-        // Apple callback'i cross-site POST; CSRF token taşıyamaz (state parametresi korur).
-        $middleware->preventRequestForgery(except: ['auth/apple/callback']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

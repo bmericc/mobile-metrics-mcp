@@ -18,9 +18,36 @@ class SocialLoginController extends Controller
 {
     public const PROVIDERS = ['google', 'apple', 'huawei'];
 
+    public const LABELS = ['google' => 'Google', 'apple' => 'Apple', 'huawei' => 'Huawei ID'];
+
+    /**
+     * Client ID'si tanımlı sağlayıcılar; giriş sayfası yalnızca bunları gösterir.
+     *
+     * @return array<string>
+     */
+    public static function enabledProviders(): array
+    {
+        return array_values(array_filter(self::PROVIDERS, fn (string $provider) => filled(config("services.{$provider}.client_id"))));
+    }
+
     public function redirect(string $provider): SymfonyRedirect
     {
+        abort_unless(in_array($provider, self::enabledProviders(), true), 404);
+
         return Socialite::driver($provider)->redirect();
+    }
+
+    /**
+     * Apple, e-posta/isim istendiğinde callback'i cross-site form_post (POST) ile yapar. SameSite=Lax
+     * oturum çerezi bu istekte gönderilmediği için state doğrulaması burada yapılamaz. Bu route oturum
+     * middleware'i olmadan çalışır (yeni boş oturum çerezi gerçek oturumu ezmesin) ve parametreleri
+     * GET callback'e taşır; top-level GET yönlendirmede Lax çerez gönderilir, state normal doğrulanır.
+     */
+    public function appleFormPost(Request $request): RedirectResponse
+    {
+        $query = http_build_query($request->only(['code', 'state', 'user', 'error']));
+
+        return redirect()->to(route('social.callback', 'apple').'?'.$query, 303);
     }
 
     public function callback(string $provider): RedirectResponse
