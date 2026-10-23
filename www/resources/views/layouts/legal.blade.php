@@ -29,7 +29,7 @@
     <nav>
         <a href="{{ route('home') }}" aria-label="Kalehost Metrics" style="display:inline-flex;align-items:center;gap:4px;color:var(--fg);text-decoration:none">
             @include('partials.brand-logo', ['height' => 34])
-            <strong>Metrics</strong>
+            <strong style="margin-top:4px">Metrics</strong>
         </a>
         <div class="links">
             <a href="{{ route($en ? 'legal.privacy.en' : 'legal.privacy') }}">{{ $en ? 'Privacy' : 'Gizlilik' }}</a>
