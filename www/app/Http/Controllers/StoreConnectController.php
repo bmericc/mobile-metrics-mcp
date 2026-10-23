@@ -48,15 +48,22 @@ class StoreConnectController extends Controller
             default => abort(404),
         };
 
-        // Aynı Google hesabı yeniden bağlanırsa mevcut kayıt güncellenir, yinelenmez.
-        $account = $workspace->storeAccounts()
+        // Aynı Google hesabı yeniden bağlanırsa mevcut kayıtlar güncellenir, yinelenmez. Google Play'de bir
+        // bağlantı birden çok geliştirici hesabı kaydı tarafından paylaşılır; hepsinin anahtarı yenilenir.
+        $accounts = $workspace->storeAccounts()
             ->where('store', $store)
             ->get()
-            ->first(fn ($account) => ($account->credentials['email'] ?? null) === $credentials['email']);
+            ->filter(fn ($account) => ($account->credentials['email'] ?? null) === $credentials['email']);
 
-        $account ??= $workspace->storeAccounts()->make(['store' => $store, 'label' => $credentials['email']]);
-        $account->credentials = [...($account->credentials ?? []), ...$credentials];
-        $account->save();
+        foreach ($accounts as $existing) {
+            $existing->update(['credentials' => [...$existing->credentials, ...$credentials]]);
+        }
+
+        $account = $accounts->first() ?? $workspace->storeAccounts()->create([
+            'store' => $store,
+            'label' => $credentials['email'],
+            'credentials' => $credentials,
+        ]);
 
         $url = StoreAccountResource::getUrl('index', tenant: $workspace, panel: 'app');
 

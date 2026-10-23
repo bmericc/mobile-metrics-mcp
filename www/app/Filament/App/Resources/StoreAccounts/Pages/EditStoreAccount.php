@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\StoreAccounts\Pages;
 
 use App\Actions\VerifyStoreAccount;
 use App\Filament\App\Resources\StoreAccounts\StoreAccountResource;
+use App\Stores\GooglePlay\GoogleClient;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -37,7 +38,7 @@ class EditStoreAccount extends EditRecord
             ...$this->record->credentials,
             ...array_filter($data['credentials'] ?? [], fn ($value) => filled($value)),
             // Bucket bilinçli olarak boşaltılabilmeli (opsiyonel alan).
-            'reports_bucket' => $data['credentials']['reports_bucket'] ?? null,
+            'reports_bucket' => GoogleClient::bucketName($data['credentials']['reports_bucket'] ?? null),
         ];
 
         return $data;

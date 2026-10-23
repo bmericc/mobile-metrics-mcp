@@ -56,10 +56,21 @@ class GoogleClient
         return ($this->account->credentials['auth'] ?? null) === 'oauth';
     }
 
-    public function bucket(): string
+    /**
+     * Play Console'un toplu rapor bucket'ı. Her geliştirici hesabının ayrı bucket'ı var; bu yüzden her
+     * geliştirici hesabı ayrı bir StoreAccount (aynı Google bağlantısını paylaşabilir). "gs://bucket/stats/..."
+     * gibi kopyalanan URI de kabul edilir; yalnızca bucket adı alınır.
+     */
+    public static function bucketName(?string $value): ?string
     {
-        // Kullanıcı "gs://..." ile yapıştırabilir.
-        return str($this->account->credentials['reports_bucket'] ?? '')->after('gs://')->trim('/')->toString();
+        $bucket = str($value ?? '')->trim()->after('gs://')->before('/')->toString();
+
+        return $bucket !== '' ? $bucket : null;
+    }
+
+    public function bucket(): ?string
+    {
+        return self::bucketName($this->account->credentials['reports_bucket'] ?? null);
     }
 
     /**

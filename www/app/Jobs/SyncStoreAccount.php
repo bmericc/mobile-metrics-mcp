@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Jobs\Concerns\RecordsSyncRun;
 use App\Models\StoreAccount;
+use App\Models\StoreApp;
 use App\Stores\StoreRegistry;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -25,6 +26,15 @@ class SyncStoreAccount implements ShouldQueue
             $count = 0;
 
             foreach ($collector->discoverApps($this->account) as $descriptor) {
+                // Uygulama aynı mağazanın başka bir hesabındaysa (ör. Play'de tek Google bağlantısı
+                // geliştirici hesaplarına bölündüğünde) kopyalanmaz, metrik ve ürün bağıyla birlikte taşınır.
+                StoreApp::query()
+                    ->where('workspace_id', $this->account->workspace_id)
+                    ->where('store', $this->account->store)
+                    ->where('external_id', $descriptor->externalId)
+                    ->where('store_account_id', '!=', $this->account->id)
+                    ->update(['store_account_id' => $this->account->id]);
+
                 // Ad yalnızca ilk keşifte yazılır; panelde değiştirilen ad korunur
                 // (Google Play adı vermiyor, paket adıyla başlar).
                 $this->account->storeApps()->firstOrCreate(

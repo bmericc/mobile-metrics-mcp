@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class StoreAccountForm
 {
@@ -41,9 +42,9 @@ class StoreAccountForm
                             ->hidden(fn (?StoreAccount $record) => self::usesOAuth($record))
                             ->required($requiredOnCreate),
                         TextInput::make('credentials.reports_bucket')
-                            ->label('Rapor bucket ID')
-                            ->placeholder('pubsite_prod_rev_0123456789')
-                            ->helperText('Kurulum/kaldırma raporları için. Play Console > Raporları indir > İstatistikler > "Cloud Storage URI\'yi kopyala". Boş bırakılırsa yalnızca crash/ANR ve yorumlar toplanır.'),
+                            ->label('Rapor bucket\'ı (Cloud Storage URI)')
+                            ->placeholder('gs://pubsite_prod_rev_01234567890123456789')
+                            ->helperText(self::bucketHelp()),
                     ]),
 
                 Section::make('App Store Connect kimlik bilgileri')
@@ -81,6 +82,18 @@ class StoreAccountForm
                             ->helperText('Boş bırakılırsa yorumlar senkronize edilmez.'),
                     ]),
             ]);
+    }
+
+    /**
+     * Her Play geliştirici hesabının ayrı bucket'ı var; bu yüzden her geliştirici hesabı ayrı eklenir.
+     */
+    public static function bucketHelp(): HtmlString
+    {
+        return new HtmlString(
+            'Bu kaydı tek bir Play geliştirici hesabına bağlar; kurulum, kaldırma ve puan raporları buradan okunur. '
+            .'<b>Play Console → (sol üstten geliştirici hesabını seç) → Raporları indir → İstatistikler</b> sayfasında '
+            .'<b>"Cloud Storage URI\'sini kopyala"</b> düğmesi. Boş bırakılırsa yalnızca crash/ANR ve yorumlar toplanır.'
+        );
     }
 
     private static function usesOAuth(?StoreAccount $record): bool

@@ -20,6 +20,8 @@ class BulkReports
     public function __construct(private readonly GoogleClient $client) {}
 
     /**
+     * Hesabın bucket'ında prefix ile başlayan nesneler.
+     *
      * @return iterable<array{name: string, generation: string}>
      */
     public function objects(string $prefix): iterable

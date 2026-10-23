@@ -114,6 +114,35 @@ class GooglePlayCollectorTest extends TestCase
         Queue::assertPushed(SyncAppMetrics::class, 2);
     }
 
+    public function test_developer_account_with_bucket_takes_over_its_apps_from_shared_connection(): void
+    {
+        Queue::fake();
+        $shared = $this->account->workspace->storeAccounts()->create([
+            'store' => Store::GooglePlay,
+            'label' => 'acme@gmail.com',
+            'credentials' => $this->account->credentials + [],
+        ]);
+        $shared->update(['credentials' => [...$shared->credentials, 'reports_bucket' => null]]);
+        $moved = $shared->storeApps()->create([
+            'workspace_id' => $shared->workspace_id,
+            'store' => Store::GooglePlay,
+            'external_id' => 'com.acme.other_app',
+            'name' => 'Other',
+        ]);
+        $this->objects = ['stats/installs/installs_com.acme.other_app_202610_overview.csv' => ''];
+        $this->fakeGoogle();
+
+        (new SyncStoreAccount($this->account))->handle(app(StoreRegistry::class));
+
+        $this->assertSame($this->account->id, $moved->fresh()->store_account_id);
+        $this->assertSame('Other', $moved->fresh()->name);
+        $this->assertSame(1, StoreApp::where('external_id', 'com.acme.other_app')->count());
+
+        // Bucket'sız paylaşımlı kayıt, sahiplenilmiş uygulamaları geri almaz.
+        (new SyncStoreAccount($shared->fresh()))->handle(app(StoreRegistry::class));
+        $this->assertSame($this->account->id, $moved->fresh()->store_account_id);
+    }
+
     public function test_metrics_from_bulk_reports_and_vitals(): void
     {
         $this->objects = [
