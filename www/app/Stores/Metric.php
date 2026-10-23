@@ -36,10 +36,29 @@ final class Metric
     public const RATING_COUNT = 'rating_count';
 
     /**
+     * Toplanabilir (gün/ülke/mağaza üzerinden toplanan) metrikler ve Türkçe adları.
+     *
+     * @return array<string, string>
+     */
+    public static function countLabels(): array
+    {
+        return [
+            self::INSTALLS => 'Kurulum / indirme',
+            self::UNINSTALLS => 'Kaldırma',
+            self::UPDATES => 'Güncelleme',
+            self::IMPRESSIONS => 'Gösterim',
+            self::PAGE_VIEWS => 'Sayfa görüntüleme',
+            self::ACTIVE_DEVICES => 'Aktif cihaz',
+            self::SESSIONS => 'Oturum',
+            self::CRASHES => 'Çökme',
+        ];
+    }
+
+    /**
      * @return array<string>
      */
     public static function all(): array
     {
-        return array_values((new \ReflectionClass(self::class))->getConstants());
+        return array_values(array_filter((new \ReflectionClass(self::class))->getConstants(), 'is_string'));
     }
 }

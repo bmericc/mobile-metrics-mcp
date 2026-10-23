@@ -3,8 +3,10 @@
 namespace App\Filament\App\Resources\Products\Tables;
 
 use App\Enums\Store;
+use App\Filament\App\Resources\Products\ProductResource;
 use App\Models\Product;
 use App\Models\StoreApp;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -45,7 +47,13 @@ class ProductsTable
             ->defaultSort('name')
             ->emptyStateHeading('Henüz ürün yok')
             ->emptyStateDescription('Aynı uygulamanın farklı mağazalardaki sürümlerini bir ürün altında toplayın; MCP ile ürün bazında soru sorabilirsiniz.')
+            // Satıra tıklamak raporu açar; uygulama bağlamak için Düzenle.
+            ->recordUrl(fn (Product $record) => ProductResource::getUrl('report', ['record' => $record]))
             ->recordActions([
+                Action::make('report')
+                    ->label('Rapor')
+                    ->icon('heroicon-o-chart-bar')
+                    ->url(fn (Product $record) => ProductResource::getUrl('report', ['record' => $record])),
                 EditAction::make(),
             ])
             ->toolbarActions([
