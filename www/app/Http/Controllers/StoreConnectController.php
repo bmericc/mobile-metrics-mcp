@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\VerifyStoreAccount;
 use App\Enums\Store;
+use App\Filament\App\Resources\StoreAccounts\PendingPlayConnection;
 use App\Filament\App\Resources\StoreAccounts\StoreAccountResource;
 use App\Jobs\SyncStoreAccount;
 use App\Models\Workspace;
@@ -48,6 +49,8 @@ class StoreConnectController extends Controller
             default => abort(404),
         };
 
+        $url = StoreAccountResource::getUrl('index', tenant: $workspace, panel: 'app');
+
         // Aynı Google hesabı yeniden bağlanırsa mevcut kayıtlar güncellenir, yinelenmez. Google Play'de bir
         // bağlantı birden çok geliştirici hesabı kaydı tarafından paylaşılır; hepsinin anahtarı yenilenir.
         $accounts = $workspace->storeAccounts()
@@ -55,25 +58,26 @@ class StoreConnectController extends Controller
             ->get()
             ->filter(fn ($account) => ($account->credentials['email'] ?? null) === $credentials['email']);
 
-        foreach ($accounts as $existing) {
-            $existing->update(['credentials' => [...$existing->credentials, ...$credentials]]);
+        foreach ($accounts as $account) {
+            $account->update(['credentials' => [...$account->credentials, ...$credentials]]);
+
+            if (! $verify($account)) {
+                return redirect($url)->with('store_connect.error', "{$account->label}: {$account->last_error}");
+            }
+
+            SyncStoreAccount::dispatch($account);
         }
 
-        $account = $accounts->first() ?? $workspace->storeAccounts()->create([
-            'store' => $store,
-            'label' => $credentials['email'],
-            'credentials' => $credentials,
-        ]);
-
-        $url = StoreAccountResource::getUrl('index', tenant: $workspace, panel: 'app');
-
-        if (! $verify($account)) {
-            return redirect($url)->with('store_connect.error', $account->last_error);
+        if ($accounts->isNotEmpty()) {
+            return redirect($url)->with('store_connect.success', $accounts->pluck('label')->implode(', '));
         }
 
-        SyncStoreAccount::dispatch($account);
+        // Google, bağlantının hangi Play geliştirici hesaplarına eriştiğini söylemiyor. Bağlantı e-posta
+        // adıyla kayda dönüştürülmez; kullanıcı geliştirici hesaplarını (ad + bucket) seçene kadar
+        // şifreli olarak oturumda bekler (bkz. AddStoreAccountAction::googlePlayDeveloperAccounts).
+        PendingPlayConnection::put($workspace, $credentials);
 
-        return redirect($url)->with('store_connect.success', $account->label);
+        return redirect($url);
     }
 
     /**

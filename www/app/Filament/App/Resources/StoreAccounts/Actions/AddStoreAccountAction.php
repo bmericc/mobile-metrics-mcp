@@ -4,10 +4,14 @@ namespace App\Filament\App\Resources\StoreAccounts\Actions;
 
 use App\Actions\VerifyStoreAccount;
 use App\Enums\Store;
+use App\Filament\App\Resources\StoreAccounts\PendingPlayConnection;
+use App\Filament\App\Resources\StoreAccounts\Schemas\StoreAccountForm;
 use App\Jobs\SyncStoreAccount;
+use App\Stores\GooglePlay\GoogleClient;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -128,6 +132,67 @@ class AddStoreAccountAction
                     'client_secret' => $data['client_secret'] ?? null,
                 ], $verify);
             });
+    }
+
+    /**
+     * Google Play bağlantısından sonra açılır: bağlanan Google hesabının eriştiği geliştirici hesaplarından
+     * istenenler, her biri kendi rapor bucket'ıyla ayrı kayıt olarak eklenir.
+     */
+    public static function googlePlayDeveloperAccounts(): Action
+    {
+        $pending = fn () => PendingPlayConnection::get(Filament::getTenant());
+
+        return Action::make('addPlayDeveloperAccounts')
+            ->label('Play geliştirici hesaplarını ekle')
+            ->icon('heroicon-o-plus')
+            ->visible(fn () => $pending() !== null)
+            ->modalHeading('Play geliştirici hesaplarını ekle')
+            ->modalDescription(fn () => ($pending()['email'] ?? 'Google hesabı').' bağlandı. Bu hesapla eriştiğin her Play Console geliştirici hesabını ayrı ekle.')
+            ->modalSubmitActionLabel('Ekle ve doğrula')
+            ->schema([
+                Repeater::make('developer_accounts')
+                    ->hiddenLabel()
+                    ->schema([
+                        TextInput::make('label')
+                            ->label('Geliştirici hesabı adı')
+                            ->placeholder('ör. Tartı Medikal')
+                            ->required(),
+                        TextInput::make('reports_bucket')
+                            ->label('Cloud Storage URI')
+                            ->placeholder('gs://pubsite_prod_rev_01234567890123456789')
+                            ->required(),
+                    ])
+                    ->columns(2)
+                    ->minItems(1)
+                    ->defaultItems(1)
+                    ->addActionLabel('Başka geliştirici hesabı')
+                    ->reorderable(false),
+                Callout::make('URI nerede?')
+                    ->info()
+                    ->description(StoreAccountForm::bucketHelp()),
+            ])
+            ->action(function (array $data, VerifyStoreAccount $verify) use ($pending) {
+                $connection = $pending();
+
+                foreach ($data['developer_accounts'] as $row) {
+                    self::googlePlayDeveloperAccount($connection, $row['label'], $row['reports_bucket'], $verify);
+                }
+
+                PendingPlayConnection::forget();
+            });
+    }
+
+    /**
+     * Bir Google bağlantısını (auth, email, refresh_token) tek bir Play geliştirici hesabına bağlar.
+     *
+     * @param  array<string, mixed>  $connection
+     */
+    public static function googlePlayDeveloperAccount(array $connection, string $label, string $bucket, VerifyStoreAccount $verify): void
+    {
+        self::create(Store::GooglePlay, $label, [
+            ...array_intersect_key($connection, array_flip(['auth', 'email', 'refresh_token'])),
+            'reports_bucket' => GoogleClient::bucketName($bucket),
+        ], $verify);
     }
 
     /**

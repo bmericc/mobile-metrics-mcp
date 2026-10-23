@@ -4,10 +4,10 @@ namespace App\Filament\App\Resources\StoreAccounts\Tables;
 
 use App\Actions\VerifyStoreAccount;
 use App\Enums\Store;
+use App\Filament\App\Resources\StoreAccounts\Actions\AddStoreAccountAction;
 use App\Filament\App\Resources\StoreAccounts\Schemas\StoreAccountForm;
 use App\Jobs\SyncStoreAccount;
 use App\Models\StoreAccount;
-use App\Stores\GooglePlay\GoogleClient;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -69,25 +69,9 @@ class StoreAccountsTable
                             ->helperText(StoreAccountForm::bucketHelp())
                             ->required(),
                     ])
-                    ->action(function (StoreAccount $record, array $data, VerifyStoreAccount $verify) {
-                        $account = $record->workspace->storeAccounts()->create([
-                            'store' => Store::GooglePlay,
-                            'label' => $data['label'],
-                            'credentials' => [
-                                ...array_intersect_key($record->credentials, array_flip(['auth', 'email', 'refresh_token'])),
-                                'reports_bucket' => GoogleClient::bucketName($data['reports_bucket']),
-                            ],
-                        ]);
-
-                        if (! $verify($account)) {
-                            Notification::make()->title('Hesap eklendi ama doğrulanamadı')->body($account->last_error)->danger()->persistent()->send();
-
-                            return;
-                        }
-
-                        SyncStoreAccount::dispatch($account);
-                        Notification::make()->title("{$account->label} eklendi, uygulamaları senkronize ediliyor")->success()->send();
-                    }),
+                    ->action(fn (StoreAccount $record, array $data, VerifyStoreAccount $verify) => AddStoreAccountAction::googlePlayDeveloperAccount(
+                        $record->credentials, $data['label'], $data['reports_bucket'], $verify,
+                    )),
                 EditAction::make(),
             ])
             ->toolbarActions([

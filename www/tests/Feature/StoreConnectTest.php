@@ -3,16 +3,19 @@
 namespace Tests\Feature;
 
 use App\Enums\Store;
+use App\Filament\App\Resources\StoreAccounts\Pages\ListStoreAccounts;
 use App\Jobs\SyncStoreAccount;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Stores\StoreRegistry;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use Livewire\Livewire;
 use Mockery;
 use Tests\TestCase;
 
@@ -58,12 +61,13 @@ class StoreConnectTest extends TestCase
         $this->actingAs($this->user)->get("/connect/google_play/{$other->slug}")->assertForbidden();
     }
 
-    public function test_callback_creates_verified_account_and_reconnect_updates_it(): void
+    public function test_callback_asks_for_developer_accounts_instead_of_creating_email_account(): void
     {
         Queue::fake();
         Http::fake([
             'https://oauth2.googleapis.com/token' => Http::response(['access_token' => 'ya29.user', 'expires_in' => 3600]),
             'https://playdeveloperreporting.googleapis.com/v1beta1/apps:search*' => Http::response(['apps' => []]),
+            'https://storage.googleapis.com/storage/v1/b/*' => Http::response(['items' => []]),
         ]);
 
         $this->fakeGoogleUser('refresh-1', 'refresh-2');
@@ -71,27 +75,47 @@ class StoreConnectTest extends TestCase
         $this->get('/connect/google_play/callback?code=c&state=s')
             ->assertRedirect("/app/{$this->workspace->slug}/store-accounts");
 
-        $account = $this->workspace->storeAccounts()->sole();
-        $this->assertSame(Store::GooglePlay, $account->store);
-        $this->assertSame('dev@acme.test', $account->label);
-        $this->assertSame('active', $account->status);
-        $this->assertSame(['auth' => 'oauth', 'email' => 'dev@acme.test', 'refresh_token' => 'refresh-1'], $account->credentials);
-        Queue::assertPushed(SyncStoreAccount::class);
+        // Bağlantı e-posta adıyla kayda dönüşmez; geliştirici hesabı seçimi bekler.
+        $this->assertSame(0, $this->workspace->storeAccounts()->count());
+
+        Filament::setCurrentPanel('app');
+        Filament::setTenant($this->workspace);
+
+        Livewire::test(ListStoreAccounts::class)
+            ->assertActionVisible('addPlayDeveloperAccounts')
+            ->callAction('addPlayDeveloperAccounts', data: ['developer_accounts' => [
+                ['label' => 'Acme Games', 'reports_bucket' => 'gs://pubsite_prod_rev_1/stats/installs/'],
+                ['label' => 'Acme Tools', 'reports_bucket' => 'pubsite_prod_2'],
+            ]])
+            ->assertHasNoActionErrors();
+
+        $accounts = $this->workspace->storeAccounts()->orderBy('id')->get();
+        $this->assertSame(['Acme Games', 'Acme Tools'], $accounts->pluck('label')->all());
+        $this->assertSame(['active', 'active'], $accounts->pluck('status')->all());
+        $this->assertSame(
+            ['auth' => 'oauth', 'email' => 'dev@acme.test', 'refresh_token' => 'refresh-1', 'reports_bucket' => 'pubsite_prod_rev_1'],
+            $accounts[0]->credentials,
+        );
+        $this->assertSame('pubsite_prod_2', $accounts[1]->credentials['reports_bucket']);
+        Queue::assertPushed(SyncStoreAccount::class, 2);
 
         Http::assertSent(fn (Request $request) => $request->url() === 'https://oauth2.googleapis.com/token'
             && $request['grant_type'] === 'refresh_token'
             && $request['refresh_token'] === 'refresh-1'
             && $request['client_id'] === 'gcid');
 
-        // Aynı Google hesabıyla tekrar bağlanınca yeni kayıt açılmaz, token yenilenir.
-        $account->update(['credentials' => [...$account->credentials, 'reports_bucket' => 'pubsite_prod_rev_1']]);
+        // Bekleyen bağlantı kullanıldı; modal tekrar açılmaz.
+        Livewire::test(ListStoreAccounts::class)->assertActionHidden('addPlayDeveloperAccounts');
+
+        // Aynı Google hesabıyla tekrar bağlanınca yeni kayıt açılmaz, tüm geliştirici hesaplarının token'ı yenilenir.
         $this->get("/connect/google_play/{$this->workspace->slug}");
         $this->get('/connect/google_play/callback?code=c&state=s');
 
-        $this->assertSame(1, $this->workspace->storeAccounts()->count());
-        $credentials = $account->fresh()->credentials;
-        $this->assertSame('refresh-2', $credentials['refresh_token']);
-        $this->assertSame('pubsite_prod_rev_1', $credentials['reports_bucket']);
+        $this->assertSame(2, $this->workspace->storeAccounts()->count());
+        foreach ($this->workspace->storeAccounts as $account) {
+            $this->assertSame('refresh-2', $account->credentials['refresh_token']);
+        }
+        $this->assertSame('pubsite_prod_rev_1', $accounts[0]->fresh()->credentials['reports_bucket']);
     }
 
     public function test_revoked_access_gives_reconnect_hint(): void

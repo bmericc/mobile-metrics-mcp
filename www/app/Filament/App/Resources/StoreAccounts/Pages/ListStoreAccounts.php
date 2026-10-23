@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\StoreAccounts\Pages;
 
 use App\Filament\App\Resources\StoreAccounts\Actions\AddStoreAccountAction;
+use App\Filament\App\Resources\StoreAccounts\PendingPlayConnection;
 use App\Filament\App\Resources\StoreAccounts\StoreAccountResource;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -23,6 +24,11 @@ class ListStoreAccounts extends ListRecords
             Notification::make()->title("{$label} bağlandı, ilk senkronizasyon başladı")->success()->send();
         }
 
+        // Yeni Google Play bağlantısı geliştirici hesabı seçimini bekliyor: modal kendiliğinden açılır.
+        if (PendingPlayConnection::get(Filament::getTenant())) {
+            $this->defaultAction = 'addPlayDeveloperAccounts';
+        }
+
         if ($error = session('store_connect.error')) {
             Notification::make()->title('Hesap bağlandı ama doğrulanamadı')->body($error)->danger()->persistent()->send();
         }
@@ -35,6 +41,7 @@ class ListStoreAccounts extends ListRecords
                 ->label('Google Play hesabı bağla')
                 ->icon('heroicon-o-link')
                 ->url(fn () => route('store.connect', ['google_play', Filament::getTenant()])),
+            AddStoreAccountAction::googlePlayDeveloperAccounts(),
             AddStoreAccountAction::appStore(),
             AddStoreAccountAction::appGallery(),
             CreateAction::make()
