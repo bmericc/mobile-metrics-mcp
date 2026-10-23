@@ -27,9 +27,9 @@ class PanelAccessTest extends TestCase
 
         $this->get('/app')->assertRedirect('/login');
         $this->get('/login')->assertOk()
-            ->assertSee('Google ile giriş yap')
-            ->assertSee('Huawei ID ile giriş yap')
-            ->assertDontSee('Apple ile giriş yap');
+            ->assertSee('Google ile devam et')
+            ->assertSee('Huawei ID ile devam et')
+            ->assertDontSee('Apple ile devam et');
     }
 
     public function test_member_can_open_workspace_pages(): void
