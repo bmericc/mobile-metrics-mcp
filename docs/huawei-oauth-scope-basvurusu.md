@@ -6,6 +6,7 @@ geliştiricilerine açıyor (bkz. Connect API > Getting Started > OAuth Client M
 Application Form.xlsx" şablonu doldurulup gönderilir. Şablon dokümantasyon sayfasından indirilir.
 
 **Gönderildi: 2026-10-23**, bmericc@gmail.com → agconnect@huawei.com (Gmail thread `1a16955c7f347c58`). Ek: `AppGallery Connect API Scope Application Form - Kalehost Metrics.xlsx` (bu klasörde). Şirket adı olarak "Bahri CANLI (bireysel)" kullanıldı.
+Aynı gün aynı thread'e ek cevap gönderildi: formdaki 1.6/1.7 linkleri yerine `https://metrics.kalehost.net/en/privacy` ve `/en/terms` kullanılsın.
 
 ## Bilinen değerler
 
