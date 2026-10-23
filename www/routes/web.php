@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\SocialLoginController;
+use App\Http\Controllers\StoreConnectController;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
@@ -22,5 +23,15 @@ Route::middleware('guest')->group(function () {
 // (bkz. SocialLoginController::appleFormPost).
 Route::post('/auth/apple/callback', [SocialLoginController::class, 'appleFormPost'])
     ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
+
+// Geliştirici hesabını OAuth ile bağlama. callback, {workspace} parametreli route'tan önce tanımlanmalı.
+Route::middleware('auth')->group(function () {
+    Route::get('/connect/{store}/callback', [StoreConnectController::class, 'callback'])
+        ->whereIn('store', ['google_play'])
+        ->name('store.connect.callback');
+    Route::get('/connect/{store}/{workspace:slug}', [StoreConnectController::class, 'redirect'])
+        ->whereIn('store', ['google_play'])
+        ->name('store.connect');
+});
 
 Route::post('/logout', [SocialLoginController::class, 'logout'])->middleware('auth')->name('logout');

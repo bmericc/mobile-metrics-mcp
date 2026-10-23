@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\StoreAccounts\Schemas;
 
 use App\Enums\Store;
+use App\Models\StoreAccount;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -36,11 +37,13 @@ class StoreAccountForm
                         Textarea::make('credentials.service_account_json')
                             ->label('Service account JSON')
                             ->rows(6)
+                            // OAuth ile bağlanan hesapta anahtar yok; sadece bucket düzenlenir.
+                            ->hidden(fn (?StoreAccount $record) => self::usesOAuth($record))
                             ->required($requiredOnCreate),
                         TextInput::make('credentials.reports_bucket')
-                            ->label('Rapor bucket')
+                            ->label('Rapor bucket ID')
                             ->placeholder('pubsite_prod_rev_0123456789')
-                            ->required($requiredOnCreate),
+                            ->helperText('Kurulum/kaldırma raporları için. Play Console > Raporları indir > İstatistikler > "Cloud Storage URI\'yi kopyala". Boş bırakılırsa yalnızca crash/ANR ve yorumlar toplanır.'),
                     ]),
 
                 Section::make('App Store Connect kimlik bilgileri')
@@ -78,6 +81,11 @@ class StoreAccountForm
                             ->helperText('Boş bırakılırsa yorumlar senkronize edilmez.'),
                     ]),
             ]);
+    }
+
+    private static function usesOAuth(?StoreAccount $record): bool
+    {
+        return ($record?->credentials['auth'] ?? null) === 'oauth';
     }
 
     private static function isStore(mixed $value, Store $store): bool

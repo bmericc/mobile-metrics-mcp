@@ -23,13 +23,15 @@ use Throwable;
  *  - Crash / ANR oranı: Play Developer Reporting API
  *  - Yorumlar: Android Publisher API reviews.list (yalnızca son 7 günde yazılan/güncellenen yorumlar)
  *
- * Kimlik: credentials.service_account_json + credentials.reports_bucket. Service account,
- * Play Console > Kullanıcılar ve izinler'den hesaba davet edilmiş ve rapor görme yetkisi almış olmalı.
+ * Kimlik: ya OAuth ("Google Play hesabı bağla", credentials.refresh_token) ya da service account
+ * (credentials.service_account_json). credentials.reports_bucket opsiyonel; yoksa kurulum raporları atlanır.
  * Gelir (earnings/ zip raporları) henüz toplanmıyor.
  */
 class GooglePlayCollector implements StoreCollector
 {
     private const PUBLISHER_API = 'https://androidpublisher.googleapis.com/androidpublisher/v3';
+
+    private const REPORTING_API = 'https://playdeveloperreporting.googleapis.com/v1beta1';
 
     /**
      * [rapor, boyut]; country boyutu ülke kırılımı, overview toplamı (ZZ) verir.
@@ -47,8 +49,18 @@ class GooglePlayCollector implements StoreCollector
     {
         $client = new GoogleClient($account);
 
+        try {
+            $client->get(self::REPORTING_API.'/apps:search', ['pageSize' => 1]);
+        } catch (RequestException $e) {
+            throw new RuntimeException(match ($e->response->status()) {
+                403 => 'Bu Google hesabının Play Console\'da uygulama görme yetkisi yok.',
+                default => 'Google Play Developer Reporting API hatası: HTTP '.$e->response->status(),
+            }, previous: $e);
+        }
+
+        // Bucket opsiyonel: yoksa yalnızca vitals ve yorumlar toplanır, kurulum raporları atlanır.
         if ($client->bucket() === '') {
-            throw new RuntimeException('Rapor bucket adı girilmemiş.');
+            return;
         }
 
         try {
@@ -58,7 +70,7 @@ class GooglePlayCollector implements StoreCollector
             ]);
         } catch (RequestException $e) {
             throw new RuntimeException(match ($e->response->status()) {
-                403 => 'Service account bu bucket\'ı okuyamıyor. Play Console\'da hesaba davet edilip rapor görme yetkisi verilmeli.',
+                403 => 'Rapor bucket\'ı okunamıyor. Bağlanan hesabın Play Console\'da toplu rapor indirme yetkisi olmalı.',
                 404 => 'Bucket bulunamadı: '.$client->bucket(),
                 default => 'Google Cloud Storage hatası: HTTP '.$e->response->status(),
             }, previous: $e);
@@ -67,17 +79,32 @@ class GooglePlayCollector implements StoreCollector
 
     public function discoverApps(StoreAccount $account): iterable
     {
-        // Android Publisher API uygulama listelemiyor; paketler rapor dosya adlarından çıkarılır.
-        $packages = [];
+        $client = new GoogleClient($account);
+        $apps = [];
+        $query = ['pageSize' => 1000];
 
-        foreach ((new BulkReports(new GoogleClient($account)))->objects('stats/installs/installs_') as $object) {
-            if (preg_match('#^stats/installs/installs_(.+)_\d{6}_overview\.csv$#', $object['name'], $match)) {
-                $packages[$match[1]] = true;
+        // Hesabın erişebildiği uygulamaları Reporting API listeliyor (adlarıyla birlikte).
+        do {
+            $page = $client->get(self::REPORTING_API.'/apps:search', $query);
+
+            foreach ($page['apps'] ?? [] as $app) {
+                $apps[$app['packageName']] = $app['displayName'] ?? $app['packageName'];
+            }
+
+            $query['pageToken'] = $page['nextPageToken'] ?? null;
+        } while ($query['pageToken']);
+
+        // Reporting API'de görünmeyen ama raporu olan paketler (eski service account kurulumları) için bucket'a da bakılır.
+        if ($client->bucket() !== '') {
+            foreach ((new BulkReports($client))->objects('stats/installs/installs_') as $object) {
+                if (preg_match('#^stats/installs/installs_(.+)_\d{6}_overview\.csv$#', $object['name'], $match)) {
+                    $apps[$match[1]] ??= $match[1];
+                }
             }
         }
 
-        foreach (array_keys($packages) as $package) {
-            yield new AppDescriptor(externalId: $package, name: $package);
+        foreach ($apps as $package => $name) {
+            yield new AppDescriptor(externalId: $package, name: $name);
         }
     }
 
@@ -90,7 +117,7 @@ class GooglePlayCollector implements StoreCollector
 
         $rows = [];
 
-        for ($month = $from->startOfMonth(); $month->lte($to); $month = $month->addMonth()) {
+        for ($month = $from->startOfMonth(); $client->bucket() !== '' && $month->lte($to); $month = $month->addMonth()) {
             foreach (self::BULK_FILES as [$report, $dimension]) {
                 $raw = $reports->monthly($app, $report, $dimension, $month);
 

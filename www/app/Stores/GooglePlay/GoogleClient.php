@@ -6,6 +6,7 @@ use App\Models\StoreAccount;
 use DateTimeImmutable;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
@@ -13,8 +14,10 @@ use Lcobucci\JWT\Signer\Rsa\Sha256;
 use RuntimeException;
 
 /**
- * Service account ile Google API istemcisi. Token, JWT bearer grant ile alınır
- * (google/auth paketine gerek kalmadan; Http::fake ile test edilebilir).
+ * Google API istemcisi. İki kimlik modu var:
+ *  - oauth: kullanıcı "Google Play hesabı bağla" ile onay verdi; refresh token ile access token alınır.
+ *  - service account: JSON anahtar yapıştırıldı; JWT bearer grant ile access token alınır.
+ * google/auth paketine gerek kalmadan, Http::fake ile test edilebilir.
  */
 class GoogleClient
 {
@@ -46,6 +49,11 @@ class GoogleClient
             'private_key' => $json['private_key'],
             'token_uri' => $json['token_uri'] ?? 'https://oauth2.googleapis.com/token',
         ];
+    }
+
+    public function usesOAuth(): bool
+    {
+        return ($this->account->credentials['auth'] ?? null) === 'oauth';
     }
 
     public function bucket(): string
@@ -92,6 +100,34 @@ class GoogleClient
             return $this->token;
         }
 
+        $response = $this->usesOAuth() ? $this->refreshGrant() : $this->jwtBearerGrant();
+
+        if ($response->failed() && $this->usesOAuth() && $response->json('error') === 'invalid_grant') {
+            throw new RuntimeException('Google erişim izni geri alınmış ya da süresi dolmuş; hesabı panelden yeniden bağlayın.');
+        }
+
+        if ($response->failed()) {
+            throw new RuntimeException('Google token alınamadı: '.($response->json('error_description') ?? $response->json('error') ?? 'HTTP '.$response->status()));
+        }
+
+        $this->token = $response->json('access_token');
+        $this->tokenExpiresAt = time() + (int) $response->json('expires_in', 3600);
+
+        return $this->token;
+    }
+
+    private function refreshGrant(): Response
+    {
+        return Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $this->account->credentials['refresh_token'] ?? '',
+            'client_id' => config('services.google.client_id'),
+            'client_secret' => config('services.google.client_secret'),
+        ]);
+    }
+
+    private function jwtBearerGrant(): Response
+    {
         $account = $this->serviceAccount();
         $config = Configuration::forAsymmetricSigner(
             new Sha256,
@@ -109,18 +145,9 @@ class GoogleClient
             ->getToken($config->signer(), $config->signingKey())
             ->toString();
 
-        $response = Http::asForm()->post($account['token_uri'], [
+        return Http::asForm()->post($account['token_uri'], [
             'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
             'assertion' => $assertion,
         ]);
-
-        if ($response->failed()) {
-            throw new RuntimeException('Google token alınamadı: '.($response->json('error_description') ?? $response->json('error') ?? 'HTTP '.$response->status()));
-        }
-
-        $this->token = $response->json('access_token');
-        $this->tokenExpiresAt = time() + (int) $response->json('expires_in', 3600);
-
-        return $this->token;
     }
 }

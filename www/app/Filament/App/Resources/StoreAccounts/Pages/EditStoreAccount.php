@@ -18,11 +18,26 @@ class EditStoreAccount extends EditRecord
         ];
     }
 
+    /**
+     * Gizli olmayan alanlar forma geri basılır; anahtarlar basılmaz.
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['credentials'] = array_intersect_key(
+            $this->record->credentials ?? [],
+            array_flip(['reports_bucket', 'issuer_id', 'key_id', 'vendor_number', 'client_id', 'package_names', 'review_site', 'review_countries']),
+        );
+
+        return $data;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['credentials'] = [
             ...$this->record->credentials,
             ...array_filter($data['credentials'] ?? [], fn ($value) => filled($value)),
+            // Bucket bilinçli olarak boşaltılabilmeli (opsiyonel alan).
+            'reports_bucket' => $data['credentials']['reports_bucket'] ?? null,
         ];
 
         return $data;

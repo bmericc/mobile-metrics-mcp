@@ -86,6 +86,7 @@ class GooglePlayCollectorTest extends TestCase
     {
         Http::fake([
             'https://oauth2.googleapis.com/token' => Http::response(['access_token' => 'ya29.test', 'expires_in' => 3600]),
+            'https://playdeveloperreporting.googleapis.com/v1beta1/apps:search*' => Http::response(['apps' => []]),
             self::GCS.'*' => Http::response(['error' => ['code' => 403]], 403),
         ]);
 
@@ -207,6 +208,9 @@ class GooglePlayCollectorTest extends TestCase
 
         Http::fake([
             'https://oauth2.googleapis.com/token' => Http::response(['access_token' => 'ya29.test', 'expires_in' => 3600]),
+            'https://playdeveloperreporting.googleapis.com/v1beta1/apps:search*' => Http::response(['apps' => [
+                ['name' => 'apps/com.acme.app', 'packageName' => 'com.acme.app', 'displayName' => 'Acme Play'],
+            ]]),
             self::GCS.'*' => function (Request $request) use ($objects) {
                 $url = urldecode($request->url());
 
