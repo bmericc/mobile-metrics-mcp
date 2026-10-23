@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\StoreAccounts\Pages;
 
+use App\Actions\VerifyStoreAccount;
 use App\Filament\App\Resources\StoreAccounts\StoreAccountResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -25,5 +26,10 @@ class EditStoreAccount extends EditRecord
         ];
 
         return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        app(VerifyStoreAccount::class)($this->record);
     }
 }

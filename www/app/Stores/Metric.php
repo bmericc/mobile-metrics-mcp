@@ -22,6 +22,8 @@ final class Metric
 
     public const REVENUE = 'revenue';
 
+    public const CRASHES = 'crashes';
+
     public const CRASH_RATE = 'crash_rate';
 
     public const ANR_RATE = 'anr_rate';

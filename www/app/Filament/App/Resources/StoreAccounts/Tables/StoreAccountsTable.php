@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\StoreAccounts\Tables;
 
+use App\Actions\VerifyStoreAccount;
 use App\Enums\Store;
 use App\Jobs\SyncStoreAccount;
 use App\Models\StoreAccount;
@@ -31,9 +32,18 @@ class StoreAccountsTable
                 SelectFilter::make('store')->options(Store::class),
             ])
             ->recordActions([
+                Action::make('verify')
+                    ->label('Doğrula')
+                    ->icon('heroicon-o-check-badge')
+                    ->action(function (StoreAccount $record) {
+                        app(VerifyStoreAccount::class)($record)
+                            ? Notification::make()->title('Kimlik bilgileri geçerli')->success()->send()
+                            : Notification::make()->title('Doğrulama başarısız')->body($record->last_error)->danger()->send();
+                    }),
                 Action::make('sync')
                     ->label('Senkronize et')
                     ->icon('heroicon-o-arrow-path')
+                    ->visible(fn (StoreAccount $record) => $record->status === 'active')
                     ->action(function (StoreAccount $record) {
                         SyncStoreAccount::dispatch($record);
                         Notification::make()->title('Senkronizasyon kuyruğa alındı')->success()->send();
