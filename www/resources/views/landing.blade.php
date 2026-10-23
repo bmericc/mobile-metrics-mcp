@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kalehost Metrics — Uygulama istatistikleriniz tek yerde</title>
     <meta name="description" content="Google Play, App Store ve AppGallery uygulama istatistiklerinizi ve yorumlarınızı tek panelde toplayın, yapay zekâ asistanınızla analiz edin.">
+    @include('partials.brand-head')
     <style>
         :root { color-scheme: light dark; --bg: #f4f4f5; --card: #fff; --fg: #18181b; --muted: #71717a; --border: #e4e4e7; --primary: #4f46e5; --primary-fg: #fff; }
         @media (prefers-color-scheme: dark) { :root { --bg: #09090b; --card: #18181b; --fg: #fafafa; --muted: #a1a1aa; --border: #27272a; --primary: #818cf8; --primary-fg: #0b0b12; } }
@@ -13,7 +14,7 @@
         a { color: var(--primary); }
         .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
-        header .brand { font-weight: 700; font-size: 18px; color: var(--fg); text-decoration: none; }
+        header .brand { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 18px; color: var(--fg); text-decoration: none; }
         .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); color: var(--fg); background: var(--card); }
         .btn-primary { background: var(--primary); border-color: var(--primary); color: var(--primary-fg); }
         .hero { padding: 56px 0 40px; max-width: 720px; }
@@ -36,7 +37,10 @@
 <body>
 <div class="wrap">
     <header>
-        <a class="brand" href="{{ route('home') }}">Kalehost Metrics</a>
+        <a class="brand" href="{{ route('home') }}" aria-label="Kalehost Metrics">
+            @include('partials.brand-logo', ['height' => 40])
+            <span>Metrics</span>
+        </a>
         @auth
             <a class="btn" href="{{ url('/app') }}">Panele git</a>
         @else

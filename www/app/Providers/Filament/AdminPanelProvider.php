@@ -28,6 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             // Giriş paneller dışında, /login sayfasında sosyal hesaplarla yapılır.
             ->brandName('Kalehost Metrics Admin')
+            ->brandLogo(asset('images/kalehost_logo.svg'))
+            ->darkModeBrandLogo(asset('images/kalehost_yatay_beyaz.svg'))
+            ->brandLogoHeight('2.75rem')
+            ->favicon(asset('images/kalehost_kare_siyah_v2.svg'))
             ->colors([
                 'primary' => Color::Amber,
             ])

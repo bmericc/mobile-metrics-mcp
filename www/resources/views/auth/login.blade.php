@@ -16,9 +16,10 @@
         @endforelse
     </div>
 
-    <p class="muted" style="margin: 24px 0 0; font-size: 13px">
-        Giriş yaparak <a href="{{ route('legal.terms') }}">Kullanım Koşulları</a>'nı ve
-        <a href="{{ route('legal.privacy') }}">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
-        <br><a href="{{ route('home') }}">Kalehost Metrics hakkında</a>
-    </p>
+@endsection
+
+@section('footer')
+    Giriş yaparak <a href="{{ route('legal.terms') }}">Kullanım Koşulları</a>'nı ve
+    <a href="{{ route('legal.privacy') }}">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
+    <br><a href="{{ route('home') }}">Kalehost Metrics hakkında</a>
 @endsection

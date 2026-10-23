@@ -30,6 +30,10 @@ class AppPanelProvider extends PanelProvider
             ->path('app')
             ->default()
             ->brandName('Kalehost Metrics')
+            ->brandLogo(asset('images/kalehost_logo.svg'))
+            ->darkModeBrandLogo(asset('images/kalehost_yatay_beyaz.svg'))
+            ->brandLogoHeight('2.75rem')
+            ->favicon(asset('images/kalehost_kare_siyah_v2.svg'))
             ->tenant(Workspace::class, slugAttribute: 'slug')
             ->tenantRegistration(RegisterWorkspace::class)
             ->colors([

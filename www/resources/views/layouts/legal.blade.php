@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') - Kalehost Metrics</title>
+    @include('partials.brand-head')
     <style>
         :root { color-scheme: light dark; --bg: #f4f4f5; --card: #fff; --fg: #18181b; --muted: #71717a; --border: #e4e4e7; --primary: #4f46e5; }
         @media (prefers-color-scheme: dark) { :root { --bg: #09090b; --card: #18181b; --fg: #fafafa; --muted: #a1a1aa; --border: #27272a; --primary: #818cf8; } }
@@ -26,7 +27,10 @@
 <body>
 <main>
     <nav>
-        <a href="{{ route('login') }}"><strong>Kalehost Metrics</strong></a>
+        <a href="{{ route('home') }}" aria-label="Kalehost Metrics" style="display:inline-flex;align-items:center;gap:4px;color:var(--fg);text-decoration:none">
+            @include('partials.brand-logo', ['height' => 34])
+            <strong>Metrics</strong>
+        </a>
         <div class="links">
             <a href="{{ route($en ? 'legal.privacy.en' : 'legal.privacy') }}">{{ $en ? 'Privacy' : 'Gizlilik' }}</a>
             <a href="{{ route($en ? 'legal.terms.en' : 'legal.terms') }}">{{ $en ? 'Terms' : 'Kullanım Koşulları' }}</a>
