@@ -21,10 +21,11 @@ use Throwable;
 /**
  * App Store Connect API (https://api.appstoreconnect.apple.com/v1):
  *  - Uygulamalar: GET /apps
- *  - Metrikler: Analytics Reports API (bkz. AnalyticsReports, AnalyticsReportMapper)
+ *  - Metrikler: Analytics Reports API (bkz. AnalyticsReports, AnalyticsReportMapper). Uygulamada analitik istek
+ *    yoksa ve anahtar Admin değilse (açamıyorsa) Sales and Trends raporuna düşülür (bkz. SalesReports; vendor number gerekir).
  *  - Yorumlar: GET /apps/{id}/customerReviews
  *
- * Kimlik: credentials.issuer_id, credentials.key_id, credentials.private_key (.p8 içeriği).
+ * Kimlik: credentials.issuer_id, credentials.key_id, credentials.private_key (.p8 içeriği), opsiyonel credentials.vendor_number.
  */
 class AppStoreCollector implements StoreCollector
 {
@@ -44,6 +45,20 @@ class AppStoreCollector implements StoreCollector
                 default => 'App Store Connect hatası: HTTP '.$e->response->status(),
             }, previous: $e);
         }
+
+        if (! SalesReports::vendorNumber($account)) {
+            return;
+        }
+
+        try {
+            (new SalesReports($this->client($account)))->daily($account, CarbonImmutable::today()->subDays(4));
+        } catch (RequestException $e) {
+            throw new RuntimeException(match ($e->response->status()) {
+                400 => 'Vendor number hatalı.',
+                403 => 'Satış raporu okunamıyor: anahtarda "Sales and Reports" (Satış ve Raporlar) rolü olmalı.',
+                default => 'Satış raporu hatası: HTTP '.$e->response->status(),
+            }, previous: $e);
+        }
     }
 
     public function discoverApps(StoreAccount $account): iterable
@@ -61,15 +76,24 @@ class AppStoreCollector implements StoreCollector
     public function fetchMetrics(StoreApp $app, CarbonPeriod $period): iterable
     {
         $reports = new AnalyticsReports($this->client($app->storeAccount));
-        $requestId = $reports->ongoingRequestId($app);
-
-        if ($requestId === null) {
-            // İstek yeni oluşturuldu; Apple raporları 1-2 gün içinde üretir.
-            return [];
-        }
-
         $from = CarbonImmutable::parse($period->getStartDate())->startOfDay();
         $to = CarbonImmutable::parse($period->getEndDate())->startOfDay();
+
+        try {
+            $requestId = $reports->ongoingRequestId($app);
+        } catch (AnalyticsUnavailable $e) {
+            if (! SalesReports::vendorNumber($app->storeAccount)) {
+                throw $e;
+            }
+
+            return $this->salesRows($app, $from, $to);
+        }
+
+        if ($requestId === null) {
+            // İstek yeni oluşturuldu; Apple raporları 1-2 gün içinde üretir. Bu arada satış raporu idare eder.
+            return SalesReports::vendorNumber($app->storeAccount) ? $this->salesRows($app, $from, $to) : [];
+        }
+
         $reportIds = $reports->reportIds($requestId, AnalyticsReportMapper::reportNames());
 
         // Bir günün verisi birden fazla instance'a dağılabiliyor (geç gelen düzeltmeler).
@@ -127,6 +151,25 @@ class AppStoreCollector implements StoreCollector
                 );
             }
         }
+    }
+
+    /**
+     * @return array<MetricRow>
+     */
+    private function salesRows(StoreApp $app, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $sales = new SalesReports($this->client($app->storeAccount));
+        $totals = [];
+
+        for ($day = $from; $day->lte($to); $day = $day->addDay()) {
+            foreach ($sales->rows($app, $day) as $row) {
+                foreach ([DailyMetric::ALL_COUNTRIES, $row['country']] as $country) {
+                    $totals[$day->toDateString()][$country][$row['metric']] = ($totals[$day->toDateString()][$country][$row['metric']] ?? 0) + $row['value'];
+                }
+            }
+        }
+
+        return $this->toRows($totals);
     }
 
     private function client(StoreAccount $account): AppStoreClient

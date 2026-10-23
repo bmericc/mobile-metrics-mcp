@@ -56,7 +56,9 @@ class StoreAccountForm
                             ->label('.p8 anahtar içeriği')
                             ->rows(6)
                             ->required($requiredOnCreate),
-                        TextInput::make('credentials.vendor_number')->label('Vendor number (satış raporları)'),
+                        TextInput::make('credentials.vendor_number')
+                            ->label('Vendor number')
+                            ->helperText('İndirme ve güncelleme sayıları (Satış ve Eğilimler raporu) için; Admin anahtarı gerekmez. Ödemeler ve Finansal Raporlar sayfasının sol üstünde.'),
                     ]),
 
                 Section::make('AppGallery Connect kimlik bilgileri')

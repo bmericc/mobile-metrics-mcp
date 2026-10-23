@@ -116,6 +116,56 @@ class AppStoreCollectorTest extends TestCase
             && $request['data']['relationships']['app']['data']['id'] === '6400000001');
     }
 
+    public function test_metrics_fall_back_to_sales_reports_without_admin_key(): void
+    {
+        $this->account->update(['credentials' => [...$this->account->credentials, 'vendor_number' => '81234567']]);
+        $header = "Provider\tSKU\tProduct Type Identifier\tUnits\tDeveloper Proceeds\tCountry Code\tApple Identifier\tParent Identifier";
+        $report = implode("\n", [
+            $header,
+            "APPLE\tacme\t1F\t5\t0\tTR\t6400000001\t",
+            "APPLE\tacme\t3\t2\t0\tUS\t6400000001\t",
+            "APPLE\tacme\t7\t9\t0\tTR\t6400000001\t",
+            "APPLE\tacme.pro\tIA1\t1\t2.5\tTR\t6400009999\tacme",
+            "APPLE\tother\t1\t4\t0\tTR\t6400000002\t",
+        ])."\n";
+        Http::fake([
+            self::API.'/v1/apps/6400000001/analyticsReportRequests*' => Http::response(['data' => []]),
+            self::API.'/v1/analyticsReportRequests' => Http::response(['errors' => [['status' => '403', 'code' => 'FORBIDDEN_ERROR']]], 403),
+            self::API.'/v1/salesReports*' => fn (Request $request) => str_contains(urldecode($request->url()), 'filter[reportDate]=2026-10-18')
+                ? Http::response(gzencode($report), 200, ['Content-Type' => 'application/a-gzip'])
+                : Http::response(['errors' => [['status' => '404']]], 404),
+        ]);
+
+        $rows = collect(app(AppStoreCollector::class)->fetchMetrics($this->storeApp, CarbonPeriod::create('2026-10-17', '2026-10-22')))
+            ->mapWithKeys(fn ($row) => ["{$row->date->toDateString()}|{$row->country}|{$row->metric}" => $row->value])
+            ->all();
+
+        $this->assertEquals([
+            '2026-10-18|ZZ|installs' => 7.0,
+            '2026-10-18|TR|installs' => 5.0,
+            '2026-10-18|US|installs' => 2.0,
+            '2026-10-18|ZZ|updates' => 9.0,
+            '2026-10-18|TR|updates' => 9.0,
+        ], $rows);
+        Http::assertSent(fn (Request $request) => str_contains(urldecode($request->url()), 'filter[vendorNumber]=81234567')
+            && $request->header('Accept') === ['application/a-gzip']);
+
+        // Satış olmayan geçmiş gün boş kayıtla işaretlenir; yayınlanmamış son günler işaretlenmez.
+        $this->assertTrue(RawReport::where('path', 'like', '%/sales/2026-10-17.tsv')->exists());
+        $this->assertFalse(RawReport::where('path', 'like', '%/sales/2026-10-22.tsv')->exists());
+    }
+
+    public function test_forbidden_analytics_without_vendor_number_explains_options(): void
+    {
+        Http::fake([
+            self::API.'/v1/apps/6400000001/analyticsReportRequests*' => Http::response(['data' => []]),
+            self::API.'/v1/analyticsReportRequests' => Http::response(['errors' => [['status' => '403']]], 403),
+        ]);
+
+        $this->expectExceptionMessage('Vendor number');
+        app(AppStoreCollector::class)->fetchMetrics($this->storeApp, CarbonPeriod::create('2026-10-16', '2026-10-22'));
+    }
+
     public function test_metrics_aggregate_segments_into_daily_rows(): void
     {
         $this->fakeAnalytics();

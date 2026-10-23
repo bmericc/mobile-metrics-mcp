@@ -71,6 +71,16 @@ class AppStoreClient
     }
 
     /**
+     * JSON olmayan (gzip TSV) yanıt dönen uç noktalar, ör. salesReports.
+     *
+     * @param  array<string, mixed>  $query
+     */
+    public function raw(string $path, array $query): string
+    {
+        return $this->request('application/a-gzip')->get($this->url($path), $query)->throw()->body();
+    }
+
+    /**
      * Segment URL'leri önceden imzalı (S3); Authorization başlığı gönderilmemeli.
      */
     public function download(string $url): string
@@ -78,10 +88,10 @@ class AppStoreClient
         return Http::timeout(120)->retry(3, 1000)->get($url)->throw()->body();
     }
 
-    private function request(): PendingRequest
+    private function request(string $accept = 'application/json'): PendingRequest
     {
         return Http::withToken($this->token())
-            ->acceptJson()
+            ->accept($accept)
             ->timeout(60)
             // 429 ve 5xx için yeniden dene; 4xx (yetki, doğrulama) hemen düşsün.
             ->retry(3, 2000, fn ($exception) => ! $exception instanceof RequestException

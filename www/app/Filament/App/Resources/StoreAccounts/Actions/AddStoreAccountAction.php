@@ -38,7 +38,7 @@ class AddStoreAccountAction
             ->schema([
                 self::steps('Apple OAuth sunmuyor; App Store Connect\'te bir API anahtarı oluşturup .p8 dosyasını buraya yükleyin.', [
                     '<a href="https://appstoreconnect.apple.com/access/integrations/api" target="_blank" class="underline">App Store Connect → Kullanıcılar ve Erişim → Entegrasyonlar → Ekip Anahtarları</a> sayfasını açın.',
-                    '"API Anahtarı Oluştur" ile <b>Admin</b> erişimli bir anahtar oluşturun (rapor isteği açmak Admin ister).',
+                    '"API Anahtarı Oluştur" ile <b>Sales and Reports</b> + <b>Customer Support</b> rollerinde bir anahtar oluşturun (Admin gerekmez).',
                     '.p8 dosyasını indirin (yalnızca bir kez indirilebilir) ve aşağıya sürükleyin.',
                     'Aynı sayfanın üstündeki <b>Issuer ID</b>\'yi kopyalayın.',
                 ]),
@@ -60,8 +60,9 @@ class AddStoreAccountAction
                     ->placeholder('Şirket / takım adı')
                     ->required(),
                 TextInput::make('vendor_number')
-                    ->label('Vendor number (opsiyonel)')
-                    ->helperText('Satış ve gelir raporları için; Ödemeler ve Finansal Raporlar sayfasında.'),
+                    ->label('Vendor number')
+                    ->placeholder('8xxxxxxx')
+                    ->helperText(new HtmlString('İndirme ve güncelleme sayıları için. <b>App Store Connect → Ödemeler ve Finansal Raporlar</b> sayfasının sol üstünde, takım adının altında. Boş bırakılırsa yalnızca Admin anahtarıyla açılmış analitik raporlar ve yorumlar toplanır.')),
             ])
             ->action(function (array $data, VerifyStoreAccount $verify) {
                 $file = self::file($data['key_file']);

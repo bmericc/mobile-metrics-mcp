@@ -8,7 +8,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 /**
  * Analytics Reports API akışı:
@@ -47,10 +46,9 @@ class AnalyticsReports
             ]);
         } catch (RequestException $e) {
             if ($e->response->status() === 403) {
-                throw new RuntimeException(
-                    'App Store analitik raporu henüz açılmamış ve bu anahtar açamıyor: rapor isteğini uygulama başına bir kez '
-                    .'Admin rolünde bir API anahtarı açabilir. Hesaba geçici olarak Admin anahtarı yükleyip senkronize edin, '
-                    .'sonra dar yetkili anahtara geri dönün.',
+                throw new AnalyticsUnavailable(
+                    'App Store analitik raporu bu uygulama için açık değil ve açmak Admin anahtarı istiyor. '
+                    .'Admin vermeden indirme ve güncelleme sayıları için hesaba Vendor number girin (Satış ve Eğilimler raporu).',
                     previous: $e,
                 );
             }
