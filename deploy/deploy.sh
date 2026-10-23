@@ -11,6 +11,17 @@ cd deploy
 
 docker compose up -d --build
 
+# vendor/ ve Filament asset'leri git'te değil.
+docker compose exec -T app composer install --no-dev --no-interaction --optimize-autoloader
+docker compose exec -T app php artisan filament:assets
+
+# Bind-mount edilen www/ host kullanıcısına ait; php-fpm (www-data) storage ve cache'e yazabilmeli.
+# raw-reports named volume'u ilk oluşturulduğunda root sahipli gelir.
+docker compose exec -T -u root app sh -c '
+  chmod -R a+rwX storage bootstrap/cache
+  chown -R www-data:www-data storage/app/private/raw-reports
+'
+
 # db container yeniden oluşturulduysa MariaDB birkaç saniye bağlantı kabul etmiyor;
 # migrate "Connection refused" ile düşüp deploy'u yarıda bırakıyordu. DB hazır olana
 # kadar (en fazla ~60 sn) migrate'i tekrar dene.
@@ -26,6 +37,8 @@ until docker compose exec -T app php artisan migrate --force; do
 done
 docker compose exec -T app php artisan config:clear
 docker compose exec -T app php artisan view:clear
+docker compose exec -T app php artisan config:cache
+docker compose exec -T app php artisan route:cache
 docker compose restart app worker scheduler nginx
 
 # --- Passport OAuth key izinleri ---------------------------------------------

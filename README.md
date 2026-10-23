@@ -66,8 +66,8 @@ Testler: `php artisan test`
 
 ## Production
 
-`deploy/` kalehost ile aynı düzende. Subnet `172.21.0.0/16` (kalehost 172.19 kullanıyor).
-`deploy/nginx/metrics.conf` içindeki `server_name` gerçek alan adıyla güncellenmeli.
+`deploy/` kalehost ile aynı düzende, aynı VM'de (192.168.0.98) `~/kalehost-metrics` altında çalışır.
+Subnet `172.25.0.0/16`, nginx `192.168.0.98:8084` (NPM proxy host `metrics.kalehost.net` → bu adres).
 
 ```bash
 cd deploy
