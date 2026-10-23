@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\StoreAccounts\Pages;
 
+use App\Filament\App\Resources\StoreAccounts\Actions\AddStoreAccountAction;
 use App\Filament\App\Resources\StoreAccounts\StoreAccountResource;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -34,8 +35,10 @@ class ListStoreAccounts extends ListRecords
                 ->label('Google Play hesabı bağla')
                 ->icon('heroicon-o-link')
                 ->url(fn () => route('store.connect', ['google_play', Filament::getTenant()])),
+            AddStoreAccountAction::appStore(),
+            AddStoreAccountAction::appGallery(),
             CreateAction::make()
-                ->label('Anahtarla ekle')
+                ->label('Gelişmiş: anahtarla ekle')
                 ->color('gray'),
         ];
     }
