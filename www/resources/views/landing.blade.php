@@ -54,7 +54,7 @@
             @auth
                 <a class="btn btn-primary" href="{{ url('/app') }}">Panele git</a>
             @else
-                <a class="btn btn-primary" href="{{ route('login') }}">Ücretsiz başla</a>
+                <a class="btn btn-primary" href="{{ route('login') }}">Hemen başla</a>
             @endauth
             <a class="btn" href="#nasil">Nasıl çalışır?</a>
         </div>
