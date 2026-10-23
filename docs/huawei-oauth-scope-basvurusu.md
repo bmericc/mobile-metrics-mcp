@@ -5,7 +5,7 @@ geliştiricilerine açıyor (bkz. Connect API > Getting Started > OAuth Client M
 `agconnect@huawei.com` adresine e-posta ile yapılır; ekte Huawei'nin "AppGallery Connect API Scope
 Application Form.xlsx" şablonu doldurulup gönderilir. Şablon dokümantasyon sayfasından indirilir.
 
-Gönderilmedi — göndermeden önce `<...>` alanlarını doldur.
+**Gönderildi: 2026-10-23**, bmericc@gmail.com → agconnect@huawei.com (Gmail thread `1a16955c7f347c58`). Ek: `AppGallery Connect API Scope Application Form - Kalehost Metrics.xlsx` (bu klasörde). Şirket adı olarak "Bahri CANLI (bireysel)" kullanıldı.
 
 ## Bilinen değerler
 
