@@ -42,12 +42,11 @@ class VitalsReporting
                 continue;
             }
 
-            // endTime hariç tutulur.
+            // endTime hariç tutulur. Vitals ~5-6 gün geç işlenir; istenen pencere tazelik sınırını
+            // aşıyorsa aynı uzunlukta geriye kaydırılır, yoksa 7 günlük senkronizasyon 1 güne düşer.
+            $days = (int) $from->diffInDays($to) + 1;
             $end = $to->addDay()->min($latestEnd);
-
-            if ($end->lte($from)) {
-                continue;
-            }
+            $from = $from->min($end->subDays($days));
 
             $body = [
                 'timelineSpec' => [

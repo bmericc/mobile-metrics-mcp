@@ -155,9 +155,10 @@ class GooglePlayCollectorTest extends TestCase
         $this->assertEquals(0.004, $value('anr_rate'));
         $this->assertSame(0, DailyMetric::whereDate('date', '2026-10-01')->count());
 
-        // Vitals sorgusu tazelik sınırına (22 Ekim, hariç) kırpılır.
+        // Vitals sorgusu tazelik sınırına (22 Ekim, hariç) kırpılır ve pencere uzunluğu korunur (7 gün geriye).
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), 'crashRateMetricSet:query')
             && $request['timelineSpec']['endTime']['day'] === 22
+            && $request['timelineSpec']['startTime']['day'] === 15
             && $request['timelineSpec']['startTime']['timeZone']['id'] === 'America/Los_Angeles');
 
         // Generation değişmediyse ikinci çalışmada dosyalar yeniden indirilmez.
