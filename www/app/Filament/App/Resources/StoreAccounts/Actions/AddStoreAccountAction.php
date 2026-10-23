@@ -110,6 +110,13 @@ class AddStoreAccountAction
                     ->label('Yorum ülkeleri')
                     ->placeholder('TR,DE,FR')
                     ->helperText('Boş bırakılırsa yorumlar senkronize edilmez.'),
+                TextInput::make('client_id')
+                    ->label('Yorumlar için API client ID (opsiyonel)')
+                    ->helperText('Huawei yorum API\'si Service Account kabul etmiyor. Aynı Connect API sayfasının "API client" sekmesinde, proje N/A ve Customer service rolüyle bir client oluşturun.'),
+                TextInput::make('client_secret')
+                    ->label('API client secret')
+                    ->password()
+                    ->requiredWith('client_id'),
             ])
             ->action(function (array $data, VerifyStoreAccount $verify) {
                 self::create(Store::AppGallery, $data['label'], [
@@ -117,6 +124,8 @@ class AddStoreAccountAction
                     'package_names' => $data['package_names'],
                     'review_site' => $data['review_site'] ?? 'de',
                     'review_countries' => $data['review_countries'] ?? null,
+                    'client_id' => $data['client_id'] ?? null,
+                    'client_secret' => $data['client_secret'] ?? null,
                 ], $verify);
             });
     }

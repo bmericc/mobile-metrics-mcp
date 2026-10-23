@@ -73,9 +73,11 @@ class AnalyticsReportMapper
                 Metric::SESSIONS => $this->number($row['Sessions']),
                 Metric::ACTIVE_DEVICES => $this->number($row['Unique Devices']),
             ],
-            self::ENGAGEMENT => strcasecmp($row['Event'], 'Page view') === 0
-                ? [Metric::PAGE_VIEWS => $this->number($row['Counts'])]
-                : [],
+            self::ENGAGEMENT => match (strtolower($row['Event'])) {
+                'page view' => [Metric::PAGE_VIEWS => $this->number($row['Counts'])],
+                'impression' => [Metric::IMPRESSIONS => $this->number($row['Counts'])],
+                default => [],
+            },
             self::CRASHES => [Metric::CRASHES => $this->number($row['Crashes'])],
         };
     }

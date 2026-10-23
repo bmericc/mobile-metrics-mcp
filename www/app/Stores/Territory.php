@@ -22,6 +22,17 @@ final class Territory
         };
     }
 
+    /**
+     * Ülke adından (İngilizce, ör. "Turkey", "Türkiye") alpha-2 kodu; bulunamazsa null.
+     */
+    public static function fromName(?string $name): ?string
+    {
+        static $byName = null;
+        $byName ??= array_change_key_case(array_flip(Countries::getNames('en')), CASE_LOWER) + ['turkey' => 'TR', 'türkiye' => 'TR'];
+
+        return $byName[mb_strtolower(trim((string) $name))] ?? null;
+    }
+
     private static function fromAlpha3(string $code): ?string
     {
         try {

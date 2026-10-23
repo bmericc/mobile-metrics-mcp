@@ -31,7 +31,18 @@ class AgcClient
     /** @var array<string, array{token: string, expires_at: int}> */
     private array $tokens = [];
 
-    public function __construct(private readonly StoreAccount $account) {}
+    /**
+     * @param  bool  $apiClientOnly  Service Account olsa bile API client kullan (Comments API Service Account kabul etmiyor).
+     */
+    public function __construct(
+        private readonly StoreAccount $account,
+        private readonly bool $apiClientOnly = false,
+    ) {}
+
+    public function hasApiClient(): bool
+    {
+        return filled($this->account->credentials['client_id'] ?? null) && filled($this->account->credentials['client_secret'] ?? null);
+    }
 
     /**
      * @param  array<string, mixed>  $query
@@ -60,7 +71,7 @@ class AgcClient
 
     public function usesServiceAccount(): bool
     {
-        return filled($this->account->credentials['service_account_json'] ?? null);
+        return ! $this->apiClientOnly && filled($this->account->credentials['service_account_json'] ?? null);
     }
 
     /**

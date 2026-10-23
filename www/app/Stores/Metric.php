@@ -16,6 +16,8 @@ final class Metric
 
     public const ACTIVE_DEVICES = 'active_devices';
 
+    public const IMPRESSIONS = 'impressions';
+
     public const PAGE_VIEWS = 'page_views';
 
     public const SESSIONS = 'sessions';

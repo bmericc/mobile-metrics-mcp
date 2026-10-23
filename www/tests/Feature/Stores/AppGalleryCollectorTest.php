@@ -104,6 +104,7 @@ class AppGalleryCollectorTest extends TestCase
         $this->assertEquals(300, $value('updates'));
         $this->assertEquals(40, $value('uninstalls'));
         $this->assertEquals(5000, $value('page_views'));
+        $this->assertEquals(10000, $value('impressions'));
         $this->assertEquals(900, $value('installs', 'ZZ', '2026-10-22'));
         $this->assertEquals(700, $value('installs', 'TR'));
         $this->assertEquals(500, $value('installs', 'DE'));
@@ -133,6 +134,21 @@ class AppGalleryCollectorTest extends TestCase
             && $request->header('Authorization')[0] === 'Bearer de-token');
     }
 
+    public function test_reviews_are_skipped_for_service_account_without_api_client(): void
+    {
+        $this->account->update(['credentials' => [
+            'service_account_json' => '{"key_id":"k","private_key":"x","sub_account":"1"}',
+            'package_names' => 'com.acme.app',
+            'review_countries' => 'TR',
+        ]]);
+        Http::fake();
+
+        (new SyncAppReviews($this->storeApp->fresh()))->handle(app(StoreRegistry::class));
+
+        Http::assertNothingSent();
+        $this->assertSame('succeeded', $this->account->syncRuns()->latest('id')->first()->status->value);
+    }
+
     public function test_reviews_are_skipped_without_countries(): void
     {
         $this->account->update(['credentials' => [...$this->account->credentials, 'review_countries' => '']]);
@@ -159,13 +175,14 @@ class AppGalleryCollectorTest extends TestCase
 
                 return Http::response(['ret' => ['code' => 0, 'msg' => 'success'], 'fileURL' => "https://obs.example/{$file}.csv", 'packName' => 'com.acme.app']);
             },
+            // Huawei'nin gerçek dosya biçimi (2026-10): ilk sütun "Date", dokümandan farklı sütun adları.
             'https://obs.example/date.csv' => Http::response($csv(
-                'Time,Impressions,App details page views,Total downloads,Update downloads,New downloads,Uninstalls,CTR',
-                ['20261021,"10,000","5,000",1500,300,"1,200",40,12.5%', '20261022,9000,4000,1100,200,900,30,11%', '20261001,1,1,1,1,999,1,1%'],
+                'Date,Valid impressions,Valid impression CTR,Details UV (reported by client),Total downloads,Successful updates,New downloads,Details page conversion rate,Successful installs,Installation success rate,Uninstalls,Sharings,Icon clicks,New installs,Total uninstalls',
+                ['20261021,"10,000",1.53%,"5,000",1500,300,"1,200",0.00%,1,100.00%,40,0,2,1,45', '20261022,9000,1%,4000,1100,200,900,0%,1,100%,30,0,0,1,31', '20261001,1,1%,1,1,1,999,1%,1,1%,1,0,0,1,1'],
             )),
             'https://obs.example/country-20261021.csv' => Http::response($csv(
-                'Country/Region,Impressions,App details page views,Total downloads,Update downloads,New downloads,Uninstalls',
-                ['TR,6000,3000,800,100,700,20', 'DE,4000,2000,700,200,500,20', 'Unknown,0,0,0,0,0,0'],
+                'Country/Region,Valid impressions,Details UV (reported by client),Total downloads,Successful updates,New downloads,Uninstalls',
+                ['TR,6000,3000,800,100,700,20', 'Germany,4000,2000,700,200,500,20', 'Unknown,0,0,0,0,0,0'],
             )),
             'https://obs.example/country-20261022.csv' => Http::response(''),
             self::DE.'/api/reviews/*' => fn (Request $request) => Http::response(['ret' => ['rtnCode' => 0], 'data' => [

@@ -24,7 +24,8 @@ use Throwable;
  *  - Uygulamalar: GET /api/publish/v2/appid-list?packageName=... (tüm uygulamaları listeleyen uç yok;
  *    paket adları credentials.package_names alanından gelir)
  *  - Metrikler: GET /api/report/distribution-operation-quality/v1/appDownloadExport/{appId} → CSV URL
- *  - Yorumlar: GET /api/reviews/v1/manage/dev/reviews (ülke listesi zorunlu, site alan adına bağlı)
+ *  - Yorumlar: GET /api/reviews/v1/manage/dev/reviews (ülke listesi zorunlu, site alan adına bağlı;
+ *    yalnızca API client ile — Service Account kabul edilmiyor)
  *
  * Kimlik: AGC > Kullanıcılar ve izinler > Connect API'de proje seçilmeden (N/A) oluşturulan API client.
  *   credentials: client_id, client_secret, package_names, review_site (cn|de|sg|ru), review_countries
@@ -34,13 +35,16 @@ class AppGalleryCollector implements StoreCollector
     private const REPORT_PATH = '/api/report/distribution-operation-quality/v1/appDownloadExport/';
 
     /**
-     * Rapor sütunu (en-US) => normalize metrik.
+     * Normalize metrik => aday rapor sütunları (en-US), öncelik sırasıyla. Huawei'nin gerçek dosyası
+     * dokümandaki adlardan farklı ("Successful updates", "Details UV ..."); ikisi de desteklenir.
+     * "Details UV" tekil ziyaretçi sayısıdır, sayfa görüntüleme yerine en yakın karşılık olarak alınır.
      */
     private const COLUMNS = [
-        'New downloads' => Metric::INSTALLS,
-        'Update downloads' => Metric::UPDATES,
-        'Uninstalls' => Metric::UNINSTALLS,
-        'App details page views' => Metric::PAGE_VIEWS,
+        Metric::INSTALLS => ['New downloads'],
+        Metric::UPDATES => ['Successful updates', 'Update downloads'],
+        Metric::UNINSTALLS => ['Uninstalls', 'Total uninstalls'],
+        Metric::PAGE_VIEWS => ['App details page views', 'Details UV (reported by client)'],
+        Metric::IMPRESSIONS => ['Valid impressions', 'Impressions'],
     ];
 
     public function verify(StoreAccount $account): void
@@ -76,26 +80,26 @@ class AppGalleryCollector implements StoreCollector
         $to = CarbonImmutable::parse($period->getEndDate())->startOfDay();
         $rows = [];
 
-        // Günlük toplam (ZZ) tek raporda gelir.
-        $raw = $this->report($client, $app, 'date', $from, $to);
+        // Günlük toplam (ZZ) tek raporda gelir; ilk sütun tarih (Huawei "Date" ya da "Time" yazıyor).
+        $report = $this->parse($this->report($client, $app, 'date', $from, $to));
 
-        foreach ($this->parse($raw, 'Time') as $row) {
-            $date = $this->date($row['Time']);
+        foreach ($report['rows'] as $row) {
+            $date = $this->date($row[$report['dimension']]);
 
             if ($date && $date->between($from, $to)) {
-                array_push($rows, ...$this->metricRows($row, $date, DailyMetric::ALL_COUNTRIES));
+                array_push($rows, ...$this->metricRows($row, $report['columns'], $date, DailyMetric::ALL_COUNTRIES));
             }
         }
 
-        // countryId gruplaması tarih kırılımı vermediği için ülke verisi gün gün istenir.
+        // countryId gruplaması tarih kırılımı vermediği için ülke verisi gün gün istenir; ilk sütun ülke.
         for ($day = $from; $day->lte($to); $day = $day->addDay()) {
-            $raw = $this->report($client, $app, 'countryId', $day, $day);
+            $report = $this->parse($this->report($client, $app, 'countryId', $day, $day));
 
-            foreach ($this->parse($raw, 'Country/Region') as $row) {
-                $country = Territory::toAlpha2($row['Country/Region']);
+            foreach ($report['rows'] as $row) {
+                $country = Territory::toAlpha2($row[$report['dimension']]) ?? Territory::fromName($row[$report['dimension']]);
 
                 if ($country) {
-                    array_push($rows, ...$this->metricRows($row, $day, $country));
+                    array_push($rows, ...$this->metricRows($row, $report['columns'], $day, $country));
                 }
             }
         }
@@ -113,7 +117,14 @@ class AppGalleryCollector implements StoreCollector
             return;
         }
 
-        $client = new AgcClient($app->storeAccount);
+        // Comments API Service Account token'ını reddediyor (401 "client token auth failed"); yalnızca
+        // API client (client_id + client_secret) ile çalışıyor. Hesapta API client yoksa yorumlar atlanır.
+        $client = new AgcClient($app->storeAccount, apiClientOnly: true);
+
+        if (! $client->hasApiClient()) {
+            return;
+        }
+
         $site = $credentials['review_site'] ?? 'cn';
         // API en fazla 6 aylık aralık kabul ediyor.
         $begin = ($since ?? now()->subMonths(6))->max(now()->subMonths(6)->addDay());
@@ -185,34 +196,44 @@ class AppGalleryCollector implements StoreCollector
     }
 
     /**
-     * @return array<array<string, string>>
+     * Başlık, bilinen bir metrik sütunu içeren ilk satırdır; ilk sütunu boyuttur (tarih ya da ülke).
+     *
+     * @return array{dimension: ?string, columns: array<string, string>, rows: array<array<string, string>>}
      */
-    private function parse(RawReport $raw, string $dimensionColumn): array
+    private function parse(RawReport $raw): array
     {
+        $known = array_merge(...array_values(self::COLUMNS));
+
         try {
-            $csv = Csv::parse(
-                Storage::disk('local')->get($raw->path),
-                fn (array $values) => in_array($dimensionColumn, $values, true),
-            );
+            $content = Storage::disk('local')->get($raw->path);
+            $csv = Csv::parse($content, fn (array $values) => array_intersect($known, $values) !== []);
 
             if ($csv['header'] === []) {
-                // Veri olmayan günlerde dosya yalnızca başlıktan oluşabilir ya da tamamen boş gelebilir.
-                if (trim(Csv::decode(Storage::disk('local')->get($raw->path))) === '') {
-                    $raw->update(['processed_at' => now()]);
+                // Veri olmayan günlerde dosya boş gelebilir.
+                if (trim(Csv::decode($content)) === '') {
+                    $raw->update(['processed_at' => now(), 'error' => null]);
 
-                    return [];
+                    return ['dimension' => null, 'columns' => [], 'rows' => []];
                 }
 
-                throw new RuntimeException(sprintf('AppGallery raporunda "%s" sütunlu başlık satırı bulunamadı.', $dimensionColumn));
+                throw new RuntimeException('AppGallery raporunda beklenen sütunlar yok. İlk satır: '.strtok(Csv::decode($content), "\r\n"));
             }
 
-            if (array_intersect(array_keys(self::COLUMNS), $csv['header']) === []) {
-                throw new RuntimeException('AppGallery raporunda beklenen sütunlar yok. Gelen sütunlar: '.implode(', ', $csv['header']));
+            $columns = [];
+
+            foreach (self::COLUMNS as $metric => $candidates) {
+                foreach ($candidates as $column) {
+                    if (in_array($column, $csv['header'], true)) {
+                        $columns[$metric] = $column;
+
+                        break;
+                    }
+                }
             }
 
             $raw->update(['processed_at' => now(), 'error' => null]);
 
-            return $csv['rows'];
+            return ['dimension' => $csv['header'][0], 'columns' => $columns, 'rows' => $csv['rows']];
         } catch (Throwable $e) {
             $raw->update(['error' => $e->getMessage()]);
 
@@ -222,14 +243,15 @@ class AppGalleryCollector implements StoreCollector
 
     /**
      * @param  array<string, string>  $row
+     * @param  array<string, string>  $columns  metrik => sütun
      * @return array<MetricRow>
      */
-    private function metricRows(array $row, CarbonImmutable $date, string $country): array
+    private function metricRows(array $row, array $columns, CarbonImmutable $date, string $country): array
     {
         $rows = [];
 
-        foreach (self::COLUMNS as $column => $metric) {
-            $value = str_replace([',', ' '], '', $row[$column] ?? '');
+        foreach ($columns as $metric => $column) {
+            $value = str_replace([',', ' ', '%'], '', $row[$column] ?? '');
 
             if ($value !== '' && is_numeric($value)) {
                 $rows[] = new MetricRow($date, $metric, (float) $value, $country);
