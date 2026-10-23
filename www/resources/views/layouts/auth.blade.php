@@ -30,7 +30,7 @@
 <div class="shell">
 <main class="card">
     <div style="display:flex;justify-content:center;margin-bottom:16px">
-        <a href="{{ route('home') }}" aria-label="Kalehost Metrics">@include('partials.brand-logo', ['height' => 48])</a>
+        <a href="{{ route('home') }}" aria-label="Kalehost Metrics">@include('partials.brand-logo', ['height' => 44])</a>
     </div>
     @yield('content')
 </main>

@@ -15,8 +15,6 @@
         .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
         header .brand { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 18px; color: var(--fg); text-decoration: none; }
-        /* Logo SVG'sinde kelime kutunun ortasının biraz altında; yazıyı ona hizala. */
-        header .brand span { margin-top: 5px; }
         .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); color: var(--fg); background: var(--card); }
         .btn-primary { background: var(--primary); border-color: var(--primary); color: var(--primary-fg); }
         .hero { padding: 56px 0 40px; max-width: 720px; }
@@ -41,7 +39,6 @@
     <header>
         <a class="brand" href="{{ route('home') }}" aria-label="Kalehost Metrics">
             @include('partials.brand-logo', ['height' => 40])
-            <span>Metrics</span>
         </a>
         @auth
             <a class="btn" href="{{ url('/app') }}">Panele git</a>

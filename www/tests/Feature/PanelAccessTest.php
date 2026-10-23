@@ -55,6 +55,8 @@ class PanelAccessTest extends TestCase
         [$admin] = $this->member(admin: true);
 
         $this->actingAs($user)->get('/admin')->assertForbidden();
-        $this->actingAs($admin)->get('/admin/sync-runs')->assertOk();
+        $this->actingAs($admin)->get('/admin/sync-runs')->assertOk()
+            ->assertSee('images/kalehost_logo.svg', false)
+            ->assertSee('Metrics</span>', false);
     }
 }

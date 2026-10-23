@@ -18,8 +18,6 @@
         .brand { position: relative; overflow: hidden; color: #fff; padding: 48px 56px; display: flex; flex-direction: column; justify-content: space-between;
             background: radial-gradient(1200px 600px at -10% -10%, #6366f1 0%, transparent 60%), radial-gradient(900px 600px at 110% 110%, #7c3aed 0%, transparent 55%), #1e1b4b; }
         .brand .logo { display: inline-flex; align-items: center; gap: 6px; color: #fff; text-decoration: none; font-weight: 700; font-size: 20px; }
-        .brand .logo img { height: 44px; width: auto; display: block; }
-        .brand .logo span { margin-top: 6px; opacity: .85; }
         .brand h2 { font-size: clamp(28px, 3.2vw, 40px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; max-width: 520px; }
         .brand p.lead { color: rgba(255,255,255,.75); font-size: 17px; margin: 0 0 32px; max-width: 480px; }
         .brand ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; max-width: 480px; }
@@ -47,7 +45,6 @@
             .brand { display: none; }
             .form { align-items: flex-start; padding-top: 56px; }
             .form .mobile-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 32px; color: var(--fg); text-decoration: none; font-weight: 700; font-size: 18px; }
-            .form .mobile-logo span { margin-top: 8px; }
         }
     </style>
 </head>
@@ -55,8 +52,7 @@
 <div class="page">
     <aside class="brand">
         <a class="logo" href="{{ route('home') }}" aria-label="Kalehost Metrics">
-            <img src="{{ asset('images/kalehost_yatay_beyaz.svg') }}" alt="Kale Host">
-            <span>Metrics</span>
+            @include('partials.brand-logo', ['height' => 44, 'variant' => 'white'])
         </a>
 
         <div>
@@ -86,7 +82,6 @@
         <div class="inner">
             <a class="mobile-logo" href="{{ route('home') }}" aria-label="Kalehost Metrics">
                 @include('partials.brand-logo', ['height' => 38])
-                <span>Metrics</span>
             </a>
 
             <h1>Giriş yap</h1>
