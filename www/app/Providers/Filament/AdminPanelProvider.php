@@ -28,9 +28,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             // Giriş paneller dışında, /login sayfasında sosyal hesaplarla yapılır.
             ->brandName('Kalehost Metrics Admin')
-            ->brandLogo(fn () => view('partials.brand-logo', ['height' => 36, 'variant' => 'black']))
-            ->darkModeBrandLogo(fn () => view('partials.brand-logo', ['height' => 36, 'variant' => 'white']))
-            ->brandLogoHeight('36px')
+            ->brandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'black']))
+            ->darkModeBrandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'white']))
+            ->brandLogoHeight('40px')
             ->favicon(asset('images/kalehost_kare_siyah_v2.svg'))
             ->colors([
                 'primary' => Color::Amber,

@@ -1,33 +1,35 @@
 {{--
-    Kalehost yatay logosu + isteğe bağlı "Metrics" yazısı.
-    $height: logo yüksekliği (px). $metrics: "Metrics" yazısını ekle.
+    Kalehost yatay logosu ve "Metrics" yazısı: iki ayrı SVG, yan yana.
+    $height: yükseklik (px). $metrics: "Metrics" görselini ekle.
     $variant: 'auto' (işletim sistemi temasına göre) | 'white' | 'black'. Filament kendi tema anahtarını
     kullandığı için orada 'black' / 'white' açıkça verilir (brandLogo / darkModeBrandLogo).
 
-    Ölçüler logo SVG'sinden (viewBox 760x260) ölçüldü: "KaleHost" büyük harf yüksekliği 95 birim (%36.5),
-    yazı tabanı üstten 210 birim (%80.8), kelime logonun sağ kenarına dayanıyor. "Metrics" aynı büyük harf
-    yüksekliği ve aynı taban çizgisiyle yazılır; system-ui'de büyük harf yüksekliği ~0.71em.
+    "Metrics" SVG'si (kalehost_metrics_yazi*.svg) logoyla aynı ölçekte üretildi: yükseklik 260 birim,
+    taban çizgisi y=210, büyük harf yüksekliği 95 — iki görsel aynı yükseklikte gösterilince harfler
+    birebir aynı boyutta ve aynı hizada durur. Yazı tipine bağımlı değil.
 --}}
 @php
     $height = $height ?? 36;
     $metrics = $metrics ?? true;
     $variant = $variant ?? 'auto';
-    $fontSize = round($height * 0.365 / 0.71, 1);
-    $padBottom = round($height * 0.192 - $fontSize * 0.21, 1);
-    $gap = round($height * 0.12, 1);
+    $gap = round($height * 52 / 260, 1);
+    $images = [
+        'logo' => ['images/kalehost_logo.svg', 'images/kalehost_yatay_beyaz.svg', 'Kale Host'],
+        'metrics' => ['images/kalehost_metrics_yazi.svg', 'images/kalehost_metrics_yazi_beyaz.svg', 'Metrics'],
+    ];
+    if (! $metrics) {
+        unset($images['metrics']);
+    }
 @endphp
-<span style="display:inline-flex;align-items:flex-end;gap:{{ $gap }}px;line-height:1">
-    @if ($variant === 'white')
-        <img src="{{ asset('images/kalehost_yatay_beyaz.svg') }}" alt="Kale Host" style="height:{{ $height }}px;width:auto;display:block">
-    @elseif ($variant === 'black')
-        <img src="{{ asset('images/kalehost_logo.svg') }}" alt="Kale Host" style="height:{{ $height }}px;width:auto;display:block">
-    @else
-        <picture style="display:block">
-            <source srcset="{{ asset('images/kalehost_yatay_beyaz.svg') }}" media="(prefers-color-scheme: dark)">
-            <img src="{{ asset('images/kalehost_logo.svg') }}" alt="Kale Host" style="height:{{ $height }}px;width:auto;display:block">
-        </picture>
-    @endif
-    @if ($metrics)
-        <span style="font:800 {{ $fontSize }}px/1 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:-0.01em;padding-bottom:{{ max($padBottom, 0) }}px;color:{{ ['white' => '#fff', 'black' => '#000'][$variant] ?? 'inherit' }}">Metrics</span>
-    @endif
+<span style="display:inline-flex;align-items:flex-start;gap:{{ $gap }}px">
+    @foreach ($images as [$black, $white, $alt])
+        @if ($variant === 'auto')
+            <picture style="display:block">
+                <source srcset="{{ asset($white) }}" media="(prefers-color-scheme: dark)">
+                <img src="{{ asset($black) }}" alt="{{ $alt }}" style="height:{{ $height }}px;width:auto;display:block">
+            </picture>
+        @else
+            <img src="{{ asset($variant === 'white' ? $white : $black) }}" alt="{{ $alt }}" style="height:{{ $height }}px;width:auto;display:block">
+        @endif
+    @endforeach
 </span>
