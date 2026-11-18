@@ -130,7 +130,6 @@ docker compose exec app php artisan passport:keys
 
 Sonraki deploy'lar: `deploy/deploy.sh`.
 
-
 ## Katkı ve güvenlik
 
 Bkz. [CONTRIBUTING.tr.md](CONTRIBUTING.tr.md). Güvenlik açıklarını [SECURITY.tr.md](SECURITY.tr.md)'de
