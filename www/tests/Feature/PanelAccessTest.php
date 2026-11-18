@@ -56,6 +56,6 @@ class PanelAccessTest extends TestCase
 
         $this->actingAs($user)->get('/admin')->assertForbidden();
         $this->actingAs($admin)->get('/admin/sync-runs')->assertOk()
-            ->assertSee('Metrics');
+            ->assertSee('Mobile Metrics MCP')->assertSee('fonts/brand/sora-700.woff2', false);
     }
 }
