@@ -11,6 +11,12 @@ All notable changes to this project are listed here. The format follows
 - Installation guide (`docs/installation.md`, EN/TR) with an example Compose stack built on the
   published image.
 
+### Changed
+
+- The Docker image runs the database migrations and creates the OAuth keys when the web server
+  starts, waiting for the database if needed. Set `AUTO_MIGRATE=false` to run migrations by hand.
+- The example Compose stack starts the worker and the scheduler after the app is healthy.
+
 ## [1.0.1] - 2026-11-18
 
 First public release.

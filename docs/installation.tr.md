@@ -92,19 +92,13 @@ secret'ını kullanın. Yönlendirme adresi `{APP_URL}/auth/huawei/callback`.
 docker compose up -d --wait
 ```
 
-`--wait`, veritabanı hazır olup uygulama çalışınca döner. Sonra tabloları ve MCP istemcilerinin
-token imzaladığı OAuth anahtarlarını oluşturun:
+`app` container'ı her açılışta storage klasörlerini oluşturur, veritabanı migration'larını çalıştırır
+(veritabanı henüz açılıyorsa bekler) ve MCP istemcilerinin token imzaladığı OAuth anahtarlarını, yoksa
+oluşturur. Worker ve scheduler, uygulama sağlıklı olunca başlar. `--wait` her şey ayağa kalkınca döner;
+ilk açılış biraz daha uzun sürer.
 
-```bash
-docker compose exec app php artisan migrate --force
-```
-
-```bash
-docker compose exec app php artisan passport:keys
-```
-
-Migration çalışana kadar worker ve scheduler "table not found" hatası yazabilir; kendiliğinden
-yeniden başlarlar.
+Migration'ları kendiniz çalıştırmak isterseniz `.env` içinde `AUTO_MIGRATE=false` yazın ve her
+güncellemeden sonra `docker compose exec app php artisan migrate --force` çalıştırın.
 
 Uygulama artık `127.0.0.1:8080`'de dinliyor. Reverse proxy'nizi bu adrese yönlendirin ve
 `{APP_URL}/login` sayfasının HTTPS ile açıldığını kontrol edin.
@@ -159,11 +153,7 @@ docker compose pull
 docker compose up -d --wait
 ```
 
-```bash
-docker compose exec app php artisan migrate --force
-```
-
-`:1` etiketi en son 1.x sürümünü izler. Yalnızca elle güncellemek için `:1.0.1` gibi tam bir sürüme
+Yeni app container'ı açılırken yeni migration'ları çalıştırır. `:1` etiketi en son 1.x sürümünü izler. Yalnızca elle güncellemek için `:1.0.1` gibi tam bir sürüme
 sabitleyin. Güncellemeden önce [CHANGELOG.md](../CHANGELOG.md)'yi okuyun.
 
 ## Yedekleme

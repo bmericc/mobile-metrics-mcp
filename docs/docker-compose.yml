@@ -2,6 +2,8 @@
 # See docs/installation.md. Put the settings in a .env file next to this file.
 #
 # The web app listens on 127.0.0.1:8080. Put a reverse proxy with HTTPS in front of it.
+# The app container runs the migrations and creates the OAuth keys when it starts; the worker
+# and the scheduler start after it is healthy.
 
 x-app: &app
   image: ghcr.io/bmericc/mobile-metrics-mcp:1
@@ -35,9 +37,18 @@ services:
     <<: *app
     ports:
       - "127.0.0.1:8080:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:2019/metrics > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
   worker:
     <<: *app
+    depends_on:
+      app:
+        condition: service_healthy
     command: php artisan queue:work --sleep=3 --tries=2 --max-time=3600 --timeout=600
     # The image's health check probes the web server, which these services do not run.
     healthcheck:
@@ -45,6 +56,9 @@ services:
 
   scheduler:
     <<: *app
+    depends_on:
+      app:
+        condition: service_healthy
     command: php artisan schedule:work
     # The image's health check probes the web server, which these services do not run.
     healthcheck:
