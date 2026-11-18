@@ -82,10 +82,10 @@ Sonraki deploy'lar: `deploy/deploy.sh`.
 
 ## Depolar
 
-- **Bitbucket** (`origin`, private): tam geçmiş, private notlar (`memory/`) dahil. Production buradan çeker.
-- **GitHub** (`github`, public): https://github.com/bmericc/mobile-metrics-mcp. Aynı geçmiş, `memory/` her commit'ten çıkarılmış.
+- **GitHub** (`origin`, public): https://github.com/bmericc/mobile-metrics-mcp. Kodun tamamı burada; production da buradan çeker.
+- **Bitbucket** (private): `bahricanli/kalehost-metrics` yalnızca private notları (`memory/`) tutar.
+  `memory/` bu repoda `.gitignore` ile dışlanır; ayrı bir git reposu olarak klonlanır:
+  `git clone git@ssh.bitbucket.org:bahricanli/kalehost-metrics.git memory`.
+  Eski tam geçmiş (kod + notlar) Bitbucket'ta `archive/full-history` dalında duruyor.
 
-Günlük akış: commit → `git push origin main` → `tools/publish-github.sh`.
-Yerelden doğrudan `git push github` yapma: geçmişler farklı, private dosyalar sızar.
-Public olmaması gereken yeni bir yol varsa betikteki `PRIVATE_PATHS` listesine ekle.
-GitHub'dan gelen PR'ları `git fetch github` sonrası `git cherry-pick` ile `main`e al.
+Kod için normal git akışı: `git pull` / `git push` (GitHub). Notlar için `memory/` içinde ayrıca commit + push.
