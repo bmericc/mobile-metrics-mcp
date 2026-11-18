@@ -79,3 +79,13 @@ docker compose exec app php artisan passport:keys
 ```
 
 Sonraki deploy'lar: `deploy/deploy.sh`.
+
+## Depolar
+
+- **Bitbucket** (`origin`, private): tam geçmiş, private notlar (`memory/`) dahil. Production buradan çeker.
+- **GitHub** (`github`, public): https://github.com/bmericc/mobile-metrics-mcp. Aynı geçmiş, `memory/` her commit'ten çıkarılmış.
+
+Günlük akış: commit → `git push origin main` → `tools/publish-github.sh`.
+Yerelden doğrudan `git push github` yapma: geçmişler farklı, private dosyalar sızar.
+Public olmaması gereken yeni bir yol varsa betikteki `PRIVATE_PATHS` listesine ekle.
+GitHub'dan gelen PR'ları `git fetch github` sonrası `git cherry-pick` ile `main`e al.
