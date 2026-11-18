@@ -243,7 +243,7 @@
 
 <div class="wrap">
     <footer>
-        <span>© {{ date('Y') }} Kale Host · Bahri CANLI</span>
+        <span>Mobile Metrics MCP {{ \App\AppVersion::CURRENT }}</span>
         <nav>
             <a href="{{ route('legal.privacy') }}">Gizlilik</a>
             <a href="{{ route('legal.terms') }}">Kullanım Koşulları</a>

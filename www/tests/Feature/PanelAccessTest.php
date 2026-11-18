@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\AppVersion;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,7 +56,6 @@ class PanelAccessTest extends TestCase
 
         $this->actingAs($user)->get('/admin')->assertForbidden();
         $this->actingAs($admin)->get('/admin/sync-runs')->assertOk()
-            ->assertSee('Mobile Metrics MCP')
-            ->assertSee(AppVersion::CURRENT);
+            ->assertSee('Metrics');
     }
 }

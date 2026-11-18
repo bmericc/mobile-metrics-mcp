@@ -18,7 +18,8 @@ All notable changes to this project are listed here. The format follows
 - The Docker image runs the database migrations and creates the OAuth keys when the web server
   starts, waiting for the database if needed. Set `AUTO_MIGRATE=false` to run migrations by hand.
 - The example Compose stack starts the worker and the scheduler after the app is healthy.
-- The logo is now the project name and version as text; the favicon is a neutral chart icon.
+- The logo is now the word "Metrics" as text and the landing page footer shows the project name
+  and version; the favicon is a neutral chart icon.
   Kale Host artwork removed.
 
 ## [1.0.1] - 2026-11-18
