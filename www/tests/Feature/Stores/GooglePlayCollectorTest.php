@@ -114,6 +114,41 @@ class GooglePlayCollectorTest extends TestCase
         Queue::assertPushed(SyncAppMetrics::class, 2);
     }
 
+    public function test_new_app_without_reports_is_taken_by_account_of_same_developer(): void
+    {
+        Queue::fake();
+        $this->objects = ['stats/installs/installs_com.acme.app_202610_overview.csv' => ''];
+        $this->fakeGoogle(apps: [
+            'com.acme.app' => 'Acme Play',
+            'com.acme.brand_new' => 'Brand New',
+            'com.other.app' => 'Other Developer',
+            'com.acme.unlisted' => 'Not Published',
+        ], listings: [
+            'com.acme.app' => '/store/apps/dev?id=111',
+            'com.acme.brand_new' => '/store/apps/dev?id=111',
+            'com.other.app' => '/store/apps/dev?id=222',
+        ]);
+
+        (new SyncStoreAccount($this->account))->handle(app(StoreRegistry::class));
+
+        $this->assertEqualsCanonicalizing(
+            ['com.acme.app', 'com.acme.brand_new'],
+            $this->account->storeApps()->pluck('external_id')->all(),
+        );
+        $this->assertSame('Brand New', StoreApp::where('external_id', 'com.acme.brand_new')->value('name'));
+    }
+
+    public function test_apps_already_owned_in_workspace_are_not_looked_up_on_play(): void
+    {
+        Queue::fake();
+        $this->objects = ['stats/installs/installs_com.acme.app_202610_overview.csv' => ''];
+        $this->fakeGoogle();
+
+        (new SyncStoreAccount($this->account))->handle(app(StoreRegistry::class));
+
+        Http::assertNotSent(fn (Request $request) => str_starts_with($request->url(), 'https://play.google.com/'));
+    }
+
     public function test_developer_account_with_bucket_takes_over_its_apps_from_shared_connection(): void
     {
         Queue::fake();
@@ -236,16 +271,27 @@ class GooglePlayCollectorTest extends TestCase
         return "\xFF\xFE".mb_convert_encoding($csv, 'UTF-16LE', 'UTF-8');
     }
 
-    private function fakeGoogle(): void
+    /**
+     * @param  array<string, string>  $apps  Reporting API apps:search sonucu (paket => ad)
+     * @param  array<string, string>  $listings  paket => mağaza sayfasındaki geliştirici bağlantısı
+     */
+    private function fakeGoogle(array $apps = ['com.acme.app' => 'Acme Play'], array $listings = []): void
     {
         $objects = $this->objects;
         $vitalsBase = 'https://playdeveloperreporting.googleapis.com/v1beta1/apps/'.self::PKG;
 
         Http::fake([
             'https://oauth2.googleapis.com/token' => Http::response(['access_token' => 'ya29.test', 'expires_in' => 3600]),
-            'https://playdeveloperreporting.googleapis.com/v1beta1/apps:search*' => Http::response(['apps' => [
-                ['name' => 'apps/com.acme.app', 'packageName' => 'com.acme.app', 'displayName' => 'Acme Play'],
-            ]]),
+            'https://playdeveloperreporting.googleapis.com/v1beta1/apps:search*' => Http::response(['apps' => collect($apps)
+                ->map(fn ($name, $package) => ['name' => 'apps/'.$package, 'packageName' => $package, 'displayName' => $name])
+                ->values()->all()]),
+            'https://play.google.com/store/apps/details*' => function (Request $request) use ($listings) {
+                parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+                return isset($listings[$query['id']])
+                    ? Http::response('<a href="'.$listings[$query['id']].'"><span>Dev</span></a>')
+                    : Http::response('Not found', 404);
+            },
             self::GCS.'*' => function (Request $request) use ($objects) {
                 $url = urldecode($request->url());
 

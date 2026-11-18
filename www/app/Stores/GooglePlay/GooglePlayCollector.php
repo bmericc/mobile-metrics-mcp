@@ -25,7 +25,8 @@ use Throwable;
  *
  * Kimlik: ya OAuth ("Google Play hesabı bağla", credentials.refresh_token) ya da service account
  * (credentials.service_account_json). credentials.reports_bucket hesabı tek bir Play geliştirici hesabına bağlar:
- * uygulamalar o bucket'taki raporlardan bulunur. Bucket yoksa erişilebilen tüm uygulamalar alınır, kurulum raporları atlanır.
+ * uygulamalar o bucket'taki raporlardan, henüz raporu olmayan yeni uygulamalar mağaza sayfasındaki geliştirici
+ * kimliğinden bulunur. Bucket yoksa erişilebilen tüm uygulamalar alınır, kurulum raporları atlanır.
  * Gelir (earnings/ zip raporları) henüz toplanmıyor.
  */
 class GooglePlayCollector implements StoreCollector
@@ -108,6 +109,8 @@ class GooglePlayCollector implements StoreCollector
                     $apps[$match[1]] = $names[$match[1]] ?? $match[1];
                 }
             }
+
+            $apps += $this->newAppsOfSameDeveloper($account, $names, $apps);
         } else {
             // Bucket'sız hesap, bucket'ı tanımlı başka bir Play hesabının sahiplendiği uygulamaları almaz.
             $owned = StoreApp::query()
@@ -122,6 +125,49 @@ class GooglePlayCollector implements StoreCollector
         foreach ($apps as $package => $name) {
             yield new AppDescriptor(externalId: $package, name: $name);
         }
+    }
+
+    /**
+     * Yeni yayınlanan uygulamanın bucket'ta henüz kurulum raporu olmuyor (Play aylık raporu kurulum verisi
+     * oluştuktan günler sonra yazıyor). Hiçbir hesabın sahiplenmediği böyle bir uygulama, mağaza sayfasındaki
+     * geliştirici kimliği bu hesabın raporlu uygulamalarınınkiyle aynıysa bu hesaba alınır.
+     *
+     * @param  array<string, string>  $names  Reporting API'nin listelediği tüm uygulamalar
+     * @param  array<string, string>  $apps  bucket raporlarından bulunan uygulamalar
+     * @return array<string, string>
+     */
+    private function newAppsOfSameDeveloper(StoreAccount $account, array $names, array $apps): array
+    {
+        $known = StoreApp::query()
+            ->where('workspace_id', $account->workspace_id)
+            ->where('store', $account->store)
+            ->pluck('external_id')
+            ->flip()
+            ->all();
+        $candidates = array_diff_key($names, $apps, $known);
+
+        if (! $candidates || ! $apps) {
+            return [];
+        }
+
+        $listing = new PlayListing;
+        $developerId = null;
+
+        foreach (array_keys($apps) as $package) {
+            if ($developerId = $listing->developerId($package)) {
+                break;
+            }
+        }
+
+        if (! $developerId) {
+            return [];
+        }
+
+        return array_filter(
+            $candidates,
+            fn (string $package) => $listing->developerId($package) === $developerId,
+            ARRAY_FILTER_USE_KEY,
+        );
     }
 
     public function fetchMetrics(StoreApp $app, CarbonPeriod $period): iterable
