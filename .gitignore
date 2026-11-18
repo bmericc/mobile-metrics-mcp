@@ -52,5 +52,5 @@ Thumbs.db
 
 .claude/
 
-# Private notes: a separate repo cloned from Bitbucket (see README "Depolar")
+# Local notes (not part of this repository)
 memory/
