@@ -1,10 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "bmericc/mobile-metrics-mcp",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "description": "Collects app statistics and reviews from Google Play, the App Store and AppGallery and serves them to AI assistants over MCP.",
+    "keywords": ["mcp", "app-store", "google-play", "appgallery", "analytics", "laravel"],
+    "license": "GPL-3.0-or-later",
     "require": {
         "php": "^8.3",
         "filament/filament": "^5.6",

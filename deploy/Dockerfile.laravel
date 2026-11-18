@@ -1,11 +1,14 @@
-FROM php:8.4-fpm
+FROM composer:2@sha256:0c8e663f14c94d07b3c45b175c51f5a14718508f21fe4dd7e54f09488dd0ed71 AS composer
+
+FROM php:8.4-fpm@sha256:212c3c9fc09d58f6b1a12b0b4a6a90fd44a209299a67633c2bccbc1dd53c55e0
 
 RUN apt-get update && apt-get install -y \
     libonig-dev libxml2-dev libzip-dev libicu-dev \
     zip unzip curl git \
     && docker-php-ext-install \
         pdo_mysql mbstring pcntl bcmath zip intl \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
