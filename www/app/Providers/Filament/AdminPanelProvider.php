@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             // Giriş paneller dışında, /login sayfasında sosyal hesaplarla yapılır.
-            ->brandName('Mobile Metrics MCP Admin')
+            ->brandName(fn () => config('app.name').' Admin')
             ->brandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'black']))
             ->darkModeBrandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'white']))
             ->brandLogoHeight('40px')

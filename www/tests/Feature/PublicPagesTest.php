@@ -24,6 +24,14 @@ class PublicPagesTest extends TestCase
         $this->get('/en/terms')->assertOk()->assertSee('Terms of Use');
     }
 
+    public function test_logo_text_follows_app_name(): void
+    {
+        config(['app.name' => 'Acme Stats']);
+
+        $this->get('/')->assertOk()->assertSee('brand-wordmark', false)->assertSee('Acme Stats');
+        $this->get('/login')->assertOk()->assertSee('Acme Stats');
+    }
+
     public function test_login_page_links_to_legal_pages(): void
     {
         $this->get('/login')->assertOk()->assertSee(route('legal.terms'))->assertSee(route('legal.privacy'));
