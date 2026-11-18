@@ -29,7 +29,7 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->default()
-            ->brandName('Kalehost Metrics')
+            ->brandName('Mobile Metrics MCP')
             ->brandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'black']))
             ->darkModeBrandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'white']))
             ->brandLogoHeight('40px')

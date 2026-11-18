@@ -1,4 +1,4 @@
-# Kalehost Metrics
+# Mobile Metrics MCP
 
 Google Play, Apple App Store ve Huawei AppGallery'de yayınlanan uygulamaların istatistiklerini
 (kurulum, kaldırma, aktif cihaz, gelir, crash/ANR, puan) ve kullanıcı yorumlarını toplayıp
@@ -7,7 +7,7 @@ MCP üzerinden LLM analizine açan sistem. Laravel 13 + Filament 5 + laravel/mcp
 ## Depo yapısı
 
 ```
-kalehost-metrics/
+mobile-metrics-mcp/
 ├── www/       ← Laravel uygulaması
 ├── deploy/    ← Docker Compose stack (db, app, worker, scheduler, nginx)
 └── memory/    ← proje notları

@@ -8,14 +8,14 @@
     <p class="muted">Son güncelleme: 23 Ekim 2026</p>
 
     <p>
-        Bu koşullar, Bahri CANLI tarafından Kale Host markası altında sunulan <strong>Kalehost Metrics</strong>
+        Bu koşullar, Bahri CANLI tarafından Kale Host markası altında sunulan <strong>Mobile Metrics MCP</strong>
         (<a href="https://metrics.kalehost.net">metrics.kalehost.net</a>) hizmetinin kullanımını düzenler.
         Hizmete giriş yaparak bu koşulları ve <a href="{{ route('legal.privacy') }}">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
     </p>
 
     <h2>1. Hizmet</h2>
     <p>
-        Kalehost Metrics; Google Play, App Store ve AppGallery'deki geliştirici hesaplarınızdan uygulama istatistiklerini
+        Mobile Metrics MCP; Google Play, App Store ve AppGallery'deki geliştirici hesaplarınızdan uygulama istatistiklerini
         ve yorumları okuyarak bir panelde ve bağladığınız yapay zekâ asistanları (MCP) aracılığıyla gösterir.
         Hizmet mağaza hesaplarınıza yalnızca okuma amacıyla erişir.
     </p>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kalehost Metrics — Uygulama istatistikleriniz tek yerde</title>
+    <title>Mobile Metrics MCP — Uygulama istatistikleriniz tek yerde</title>
     <meta name="description" content="Google Play, App Store ve AppGallery uygulama istatistiklerinizi ve yorumlarınızı tek panelde toplayın, yapay zekâ asistanınızla analiz edin.">
     @include('partials.brand-head')
     {{-- Giriş sayfasıyla aynı mor marka zemini; Vite build'e bağımlı olmasın diye stiller inline. --}}
@@ -112,7 +112,7 @@
 <header class="hero">
     <div class="wrap">
         <nav class="top">
-            <a href="{{ route('home') }}" aria-label="Kalehost Metrics">
+            <a href="{{ route('home') }}" aria-label="Mobile Metrics MCP">
                 @include('partials.brand-logo', ['height' => 38, 'variant' => 'white'])
             </a>
             <div class="links">
@@ -142,7 +142,7 @@
             </div>
 
             <div class="chat" aria-label="Örnek asistan sohbeti">
-                <div class="bar"><span>Claude · Kalehost Metrics bağlı</span><span>örnek</span></div>
+                <div class="bar"><span>Claude · Mobile Metrics MCP bağlı</span><span>örnek</span></div>
                 <div class="bubble user">Radyo C geçen ay hangi mağazada kaç yeni kurulum aldı?</div>
                 <div class="bubble bot">
                     <div class="tool">get-metrics · Eylül 2026 · installs</div>
@@ -222,7 +222,7 @@
                 <div>
                     <p class="kicker">Yapay zekâ ile analiz</p>
                     <h2>Panelde aramayın, sorun.</h2>
-                    <p class="sub">Kalehost Metrics bir MCP sunucusu sunar. Asistanınıza bağlayın; girişi kendi hesabınızla yaparsınız, asistan yalnızca sizin çalışma alanınızı görür.</p>
+                    <p class="sub">Mobile Metrics MCP bir MCP sunucusu sunar. Asistanınıza bağlayın; girişi kendi hesabınızla yaparsınız, asistan yalnızca sizin çalışma alanınızı görür.</p>
                     <div class="endpoint"><span>MCP adresi</span>{{ url('/mcp') }}</div>
                 </div>
                 <ul class="questions">

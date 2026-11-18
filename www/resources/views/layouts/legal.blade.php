@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') - Kalehost Metrics</title>
+    <title>@yield('title') - Mobile Metrics MCP</title>
     @include('partials.brand-head')
     <style>
         :root { color-scheme: light dark; --bg: #f4f4f5; --card: #fff; --fg: #18181b; --muted: #71717a; --border: #e4e4e7; --primary: #4f46e5; }
@@ -27,7 +27,7 @@
 <body>
 <main>
     <nav>
-        <a href="{{ route('home') }}" aria-label="Kalehost Metrics" style="display:inline-flex;align-items:center;gap:4px;color:var(--fg);text-decoration:none">
+        <a href="{{ route('home') }}" aria-label="Mobile Metrics MCP" style="display:inline-flex;align-items:center;gap:4px;color:var(--fg);text-decoration:none">
             @include('partials.brand-logo', ['height' => 34])
         </a>
         <div class="links">

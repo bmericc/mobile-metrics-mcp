@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Giriş - Kalehost Metrics</title>
+    <title>Giriş - Mobile Metrics MCP</title>
     @include('partials.brand-head')
     {{-- Vite build'e bağımlı olmasın diye stiller inline. --}}
     <style>
@@ -51,7 +51,7 @@
 <body>
 <div class="page">
     <aside class="brand">
-        <a class="logo" href="{{ route('home') }}" aria-label="Kalehost Metrics">
+        <a class="logo" href="{{ route('home') }}" aria-label="Mobile Metrics MCP">
             @include('partials.brand-logo', ['height' => 44, 'variant' => 'white'])
         </a>
 
@@ -80,7 +80,7 @@
 
     <main class="form">
         <div class="inner">
-            <a class="mobile-logo" href="{{ route('home') }}" aria-label="Kalehost Metrics">
+            <a class="mobile-logo" href="{{ route('home') }}" aria-label="Mobile Metrics MCP">
                 @include('partials.brand-logo', ['height' => 38])
             </a>
 
@@ -103,7 +103,7 @@
             <p class="legal">
                 Devam ederek <a href="{{ route('legal.terms') }}">Kullanım Koşulları</a>'nı ve
                 <a href="{{ route('legal.privacy') }}">Gizlilik Politikası</a>'nı kabul etmiş olursun.
-                · <a href="{{ route('home') }}">Kalehost Metrics hakkında</a>
+                · <a href="{{ route('home') }}">Mobile Metrics MCP hakkında</a>
             </p>
         </div>
     </main>

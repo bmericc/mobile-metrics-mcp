@@ -8,14 +8,14 @@
     <p class="muted">Last updated: October 23, 2026</p>
 
     <p>
-        These terms govern the use of <strong>Kalehost Metrics</strong>
+        These terms govern the use of <strong>Mobile Metrics MCP</strong>
         (<a href="https://metrics.kalehost.net">metrics.kalehost.net</a>), provided by Bahri CANLI under the Kale Host
         brand. By signing in you accept these terms and the <a href="{{ route('legal.privacy.en') }}">Privacy Policy</a>.
     </p>
 
     <h2>1. The service</h2>
     <p>
-        Kalehost Metrics reads app statistics and reviews from your developer accounts on Google Play, the App Store and
+        Mobile Metrics MCP reads app statistics and reviews from your developer accounts on Google Play, the App Store and
         AppGallery and shows them in a dashboard and through the AI assistants you connect (MCP). The service accesses
         your store accounts for reading only.
     </p>

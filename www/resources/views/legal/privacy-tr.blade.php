@@ -8,8 +8,8 @@
     <p class="muted">Son güncelleme: 23 Ekim 2026</p>
 
     <p>
-        Bu politika, <strong>Kalehost Metrics</strong> (<a href="https://metrics.kalehost.net">metrics.kalehost.net</a>)
-        hizmetinin hangi kişisel verileri neden işlediğini açıklar. Kalehost Metrics, uygulama geliştiricilerinin
+        Bu politika, <strong>Mobile Metrics MCP</strong> (<a href="https://metrics.kalehost.net">metrics.kalehost.net</a>)
+        hizmetinin hangi kişisel verileri neden işlediğini açıklar. Mobile Metrics MCP, uygulama geliştiricilerinin
         Google Play, App Store ve AppGallery'deki uygulama istatistiklerini tek yerde görmesini ve bunları yapay zekâ
         asistanlarıyla analiz etmesini sağlayan bir web hizmetidir.
     </p>
@@ -39,13 +39,13 @@
 
     <h2>4. Mağaza erişimi yalnızca okuma amaçlıdır</h2>
     <p>
-        Kalehost Metrics mağaza hesaplarınıza yalnızca istatistik ve yorumları okumak için erişir. Uygulama yayınlamaz,
+        Mobile Metrics MCP mağaza hesaplarınıza yalnızca istatistik ve yorumları okumak için erişir. Uygulama yayınlamaz,
         mağaza ayarlarını değiştirmez ve yorumlara sizin adınıza yanıt vermez.
     </p>
 
     <h2>5. Google kullanıcı verileri</h2>
     <p>
-        Kalehost Metrics'in Google API'lerinden aldığı bilgileri kullanması ve başka bir uygulamaya aktarması,
+        Mobile Metrics MCP'in Google API'lerinden aldığı bilgileri kullanması ve başka bir uygulamaya aktarması,
         Sınırlı Kullanım (Limited Use) koşulları dahil olmak üzere
         <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Hizmetleri Kullanıcı Verileri Politikası</a>'na
         uygundur. Google Play verileri yalnızca size istatistiklerinizi göstermek için kullanılır; reklam amacıyla

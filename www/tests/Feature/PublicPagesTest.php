@@ -15,7 +15,7 @@ class PublicPagesTest extends TestCase
 
     public function test_landing_and_legal_pages_are_public_in_both_languages(): void
     {
-        $this->get('/')->assertOk()->assertSee('Kalehost Metrics')->assertSee('/privacy')->assertSee('/terms');
+        $this->get('/')->assertOk()->assertSee('Mobile Metrics MCP')->assertSee('/privacy')->assertSee('/terms');
         $this->get('/privacy')->assertOk()->assertSee('Gizlilik Politikası')->assertSee('/en/privacy');
         $this->get('/en/privacy')->assertOk()->assertSee('Limited Use')->assertSee('/privacy');
         $this->get('/terms')->assertOk()->assertSee('Kullanım Koşulları');

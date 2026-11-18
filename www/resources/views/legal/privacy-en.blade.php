@@ -8,8 +8,8 @@
     <p class="muted">Last updated: October 23, 2026</p>
 
     <p>
-        This policy explains which personal data <strong>Kalehost Metrics</strong>
-        (<a href="https://metrics.kalehost.net">metrics.kalehost.net</a>) processes and why. Kalehost Metrics is a web
+        This policy explains which personal data <strong>Mobile Metrics MCP</strong>
+        (<a href="https://metrics.kalehost.net">metrics.kalehost.net</a>) processes and why. Mobile Metrics MCP is a web
         service that lets app developers see the statistics of their apps on Google Play, the App Store and AppGallery
         in one place and analyse them with AI assistants.
     </p>
@@ -39,13 +39,13 @@
 
     <h2>4. Store access is read-only</h2>
     <p>
-        Kalehost Metrics accesses your store accounts only to read statistics and reviews. It does not publish apps,
+        Mobile Metrics MCP accesses your store accounts only to read statistics and reviews. It does not publish apps,
         change store settings or reply to reviews on your behalf.
     </p>
 
     <h2>5. Google user data</h2>
     <p>
-        Kalehost Metrics' use and transfer to any other app of information received from Google APIs will adhere to the
+        Mobile Metrics MCP' use and transfer to any other app of information received from Google APIs will adhere to the
         <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>,
         including the Limited Use requirements. Google Play data is used only to show you your own statistics; it is not
         used for advertising, not sold, and not read by humans (except for security purposes, to comply with the law, or
