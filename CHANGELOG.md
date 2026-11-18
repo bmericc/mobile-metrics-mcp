@@ -6,6 +6,11 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Installation guide (`docs/installation.md`, EN/TR) with an example Compose stack built on the
+  published image.
+
 ## [1.0.1] - 2026-11-18
 
 First public release.

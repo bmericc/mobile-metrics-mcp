@@ -1,0 +1,42 @@
+# Mobile Metrics MCP: example stack built on the published image.
+# See docs/installation.md. Put the settings in a .env file next to this file.
+#
+# The web app listens on 127.0.0.1:8080. Put a reverse proxy with HTTPS in front of it.
+
+x-app: &app
+  image: ghcr.io/bmericc/mobile-metrics-mcp:1
+  restart: unless-stopped
+  env_file: .env
+  volumes:
+    - storage:/app/storage
+  depends_on:
+    - db
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  app:
+    <<: *app
+    ports:
+      - "127.0.0.1:8080:80"
+
+  worker:
+    <<: *app
+    command: php artisan queue:work --sleep=3 --tries=2 --max-time=3600 --timeout=600
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+
+volumes:
+  db-data:
+  storage:

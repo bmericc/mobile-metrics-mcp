@@ -24,6 +24,7 @@ serves them to AI assistants over MCP. Built with Laravel 13, Filament 5 and lar
 mobile-metrics-mcp/
 ├── www/         ← Laravel application
 ├── deploy/      ← Docker Compose stack used in production (db, app, worker, scheduler, nginx)
+├── docs/        ← installation guide and example Compose stack
 └── Dockerfile   ← self-contained production image (FrankenPHP)
 ```
 
@@ -72,34 +73,9 @@ Images are published for every release, for `linux/amd64` and `linux/arm64`:
 - GitHub Container Registry: `ghcr.io/bmericc/mobile-metrics-mcp`
 - Docker Hub: `bmericc/mobile-metrics-mcp`
 
-The image serves the app on port 80 (FrankenPHP). Configure it with environment variables, using
-[`www/.env.example`](www/.env.example) as the template; it needs a MySQL/MariaDB database.
-Keep `storage/` on a volume: it holds the Passport keys and the raw reports.
-
-```bash
-docker run -d --name metrics -p 8080:80 --env-file .env -v metrics-storage:/app/storage ghcr.io/bmericc/mobile-metrics-mcp
-```
-
-```bash
-docker exec metrics php artisan migrate --force
-```
-
-```bash
-docker exec metrics php artisan passport:keys
-```
-
-Run the queue worker and the scheduler from the same image, with the same env file and volume:
-
-```bash
-docker run -d --name metrics-worker --env-file .env -v metrics-storage:/app/storage ghcr.io/bmericc/mobile-metrics-mcp php artisan queue:work --tries=2 --timeout=600
-```
-
-```bash
-docker run -d --name metrics-scheduler --env-file .env -v metrics-storage:/app/storage ghcr.io/bmericc/mobile-metrics-mcp php artisan schedule:work
-```
-
-Put HTTPS in front with a reverse proxy, or set `SERVER_NAME` to your domain so that FrankenPHP
-gets a certificate itself.
+The image runs the web app on port 80 (FrankenPHP); the same image runs the queue worker and the
+scheduler. **[Installation guide](docs/installation.md)**: the Compose file, sign-in providers,
+first sign-in, store accounts and connecting an AI assistant.
 
 ## Local development
 

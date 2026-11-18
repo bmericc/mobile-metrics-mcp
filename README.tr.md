@@ -24,6 +24,7 @@ MCP üzerinden LLM analizine açan sistem. Laravel 13 + Filament 5 + laravel/mcp
 mobile-metrics-mcp/
 ├── www/         ← Laravel uygulaması
 ├── deploy/      ← production'da kullanılan Docker Compose stack (db, app, worker, scheduler, nginx)
+├── docs/        ← kurulum rehberi ve örnek Compose stack'i
 └── Dockerfile   ← kendi başına çalışan production image'ı (FrankenPHP)
 ```
 
@@ -70,34 +71,9 @@ Her sürümde `linux/amd64` ve `linux/arm64` için image yayınlanır:
 - GitHub Container Registry: `ghcr.io/bmericc/mobile-metrics-mcp`
 - Docker Hub: `bmericc/mobile-metrics-mcp`
 
-Image uygulamayı 80 portunda sunar (FrankenPHP). Ayarlar ortam değişkenleriyle verilir; şablon
-[`www/.env.example`](www/.env.example). MySQL/MariaDB veritabanı gerekir. `storage/` klasörünü
-bir volume'da tutun: Passport anahtarları ve ham raporlar orada.
-
-```bash
-docker run -d --name metrics -p 8080:80 --env-file .env -v metrics-storage:/app/storage ghcr.io/bmericc/mobile-metrics-mcp
-```
-
-```bash
-docker exec metrics php artisan migrate --force
-```
-
-```bash
-docker exec metrics php artisan passport:keys
-```
-
-Kuyruk işçisi ve scheduler aynı image'la, aynı env dosyası ve volume ile çalışır:
-
-```bash
-docker run -d --name metrics-worker --env-file .env -v metrics-storage:/app/storage ghcr.io/bmericc/mobile-metrics-mcp php artisan queue:work --tries=2 --timeout=600
-```
-
-```bash
-docker run -d --name metrics-scheduler --env-file .env -v metrics-storage:/app/storage ghcr.io/bmericc/mobile-metrics-mcp php artisan schedule:work
-```
-
-HTTPS için önüne bir reverse proxy koyun ya da `SERVER_NAME`'i alan adınız yapın; FrankenPHP
-sertifikayı kendisi alır.
+Image web uygulamasını 80 portunda çalıştırır (FrankenPHP); kuyruk işçisi ve scheduler da aynı
+image'la çalışır. **[Kurulum rehberi](docs/installation.tr.md)**: Compose dosyası, giriş
+sağlayıcıları, ilk giriş, mağaza hesapları ve AI asistanı bağlama.
 
 ## Yerel geliştirme
 
