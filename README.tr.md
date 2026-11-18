@@ -130,15 +130,6 @@ docker compose exec app php artisan passport:keys
 
 Sonraki deploy'lar: `deploy/deploy.sh`.
 
-## Depolar
-
-- **GitHub** (`origin`, public): https://github.com/bmericc/mobile-metrics-mcp. Kodun tamamı burada; production da buradan çeker.
-- **Bitbucket** (private): `bahricanli/kalehost-metrics` yalnızca private notları (`memory/`) tutar.
-  `memory/` bu repoda `.gitignore` ile dışlanır; ayrı bir git reposu olarak klonlanır:
-  `git clone git@ssh.bitbucket.org:bahricanli/kalehost-metrics.git memory`.
-  Eski tam geçmiş (kod + notlar) Bitbucket'ta `archive/full-history` dalında duruyor.
-
-Kod için normal git akışı: `git pull` / `git push` (GitHub). Notlar için `memory/` içinde ayrıca commit + push.
 
 ## Katkı ve güvenlik
 
