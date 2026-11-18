@@ -153,7 +153,7 @@ docker compose pull
 docker compose up -d --wait
 ```
 
-Yeni app container'ı açılırken yeni migration'ları çalıştırır. `:1` etiketi en son 1.x sürümünü izler. Yalnızca elle güncellemek için `:1.0.1` gibi tam bir sürüme
+Yeni app container'ı açılırken yeni migration'ları çalıştırır. `:1` etiketi en son 1.x sürümünü izler. Yalnızca elle güncellemek için `:1.0.2` gibi tam bir sürüme
 sabitleyin. Güncellemeden önce [CHANGELOG.md](../CHANGELOG.md)'yi okuyun.
 
 ## Yedekleme

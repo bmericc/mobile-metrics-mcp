@@ -151,7 +151,7 @@ docker compose pull
 docker compose up -d --wait
 ```
 
-The new app container runs any new migrations when it starts. The `:1` tag follows the latest 1.x release. Pin a full version such as `:1.0.1` to upgrade only by
+The new app container runs any new migrations when it starts. The `:1` tag follows the latest 1.x release. Pin a full version such as `:1.0.2` to upgrade only by
 hand. Read [CHANGELOG.md](../CHANGELOG.md) before upgrading.
 
 ## Backups
