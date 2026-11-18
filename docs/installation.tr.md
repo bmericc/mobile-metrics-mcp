@@ -54,6 +54,8 @@ Sonra şunları ayarlayın:
 
 - `APP_URL`: herkese açık HTTPS adresi, örneğin `https://metrics.example.com`.
 - `DB_PASSWORD`: uzun, rastgele bir parola. Veritabanı container'ı ilk açılışta bununla oluşturulur.
+- `APP_NAME` (isteğe bağlı): logo yazısı ve sayfa başlıklarında görünen ad. Varsayılanı
+  `Mobile Metrics MCP`. Değiştirdikten sonra uygulamak için `docker compose up -d` çalıştırın.
 - Giriş sağlayıcıları: bir sonraki adıma bakın.
 
 ## 4. Giriş sağlayıcısı kurun

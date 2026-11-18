@@ -54,6 +54,8 @@ Then set:
 
 - `APP_URL`: the public HTTPS address, for example `https://metrics.example.com`.
 - `DB_PASSWORD`: a long random password. The database container is created with it on first start.
+- `APP_NAME` (optional): the name shown as the logo text and in page titles. Default
+  `Mobile Metrics MCP`. After changing it, run `docker compose up -d` to apply it.
 - The sign-in provider(s), see the next step.
 
 ## 4. Set up a sign-in provider

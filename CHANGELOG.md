@@ -6,6 +6,11 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The logo text and the panel name come from `APP_NAME` (default `Mobile Metrics MCP`), so an
+  installation can rename itself in `.env`.
+
 ## [1.0.2] - 2026-11-18
 
 ### Added

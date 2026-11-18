@@ -29,7 +29,7 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->default()
-            ->brandName('Mobile Metrics MCP')
+            ->brandName(fn () => config('app.name'))
             ->brandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'black']))
             ->darkModeBrandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'white']))
             ->brandLogoHeight('40px')
