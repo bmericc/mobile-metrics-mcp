@@ -89,11 +89,11 @@ secret'ını kullanın. Yönlendirme adresi `{APP_URL}/auth/huawei/callback`.
 ## 5. Başlatın ve hazırlayın
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
-Tabloları ve MCP istemcilerinin token imzaladığı OAuth anahtarlarını oluşturun. İlk açılıştan sonra
-veritabanının hazır olması için birkaç saniye bekleyin:
+`--wait`, veritabanı hazır olup uygulama çalışınca döner. Sonra tabloları ve MCP istemcilerinin
+token imzaladığı OAuth anahtarlarını oluşturun:
 
 ```bash
 docker compose exec app php artisan migrate --force
@@ -156,7 +156,7 @@ docker compose pull
 ```
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
 ```bash

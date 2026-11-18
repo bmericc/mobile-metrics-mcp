@@ -10,7 +10,8 @@ x-app: &app
   volumes:
     - storage:/app/storage
   depends_on:
-    - db
+    db:
+      condition: service_healthy
 
 services:
   db:
@@ -23,6 +24,12 @@ services:
       MARIADB_RANDOM_ROOT_PASSWORD: "1"
     volumes:
       - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   app:
     <<: *app
@@ -32,10 +39,16 @@ services:
   worker:
     <<: *app
     command: php artisan queue:work --sleep=3 --tries=2 --max-time=3600 --timeout=600
+    # The image's health check probes the web server, which these services do not run.
+    healthcheck:
+      disable: true
 
   scheduler:
     <<: *app
     command: php artisan schedule:work
+    # The image's health check probes the web server, which these services do not run.
+    healthcheck:
+      disable: true
 
 volumes:
   db-data:

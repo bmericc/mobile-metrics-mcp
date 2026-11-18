@@ -88,11 +88,11 @@ secret. The redirect URL is `{APP_URL}/auth/huawei/callback`.
 ## 5. Start and initialise
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
-Create the tables and the OAuth keys that MCP clients sign tokens with. Wait a few seconds after the
-first start so that the database is ready:
+`--wait` returns once the database is ready and the app is running. Then create the tables and the
+OAuth keys that MCP clients sign tokens with:
 
 ```bash
 docker compose exec app php artisan migrate --force
@@ -154,7 +154,7 @@ docker compose pull
 ```
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
 ```bash
