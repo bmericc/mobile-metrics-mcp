@@ -56,7 +56,6 @@ class PanelAccessTest extends TestCase
 
         $this->actingAs($user)->get('/admin')->assertForbidden();
         $this->actingAs($admin)->get('/admin/sync-runs')->assertOk()
-            ->assertSee('images/kalehost_logo.svg', false)
-            ->assertSee('images/kalehost_metrics_yazi.svg', false);
+            ->assertSee('Mobile Metrics MCP')->assertSee('fonts/brand/sora-700.woff2', false);
     }
 }

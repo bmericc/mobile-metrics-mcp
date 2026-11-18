@@ -2,7 +2,9 @@
 # The same image also runs the queue worker and the scheduler:
 #   docker run ... IMAGE php artisan queue:work
 #   docker run ... IMAGE php artisan schedule:work
-# Configuration comes from environment variables (or an env_file); see www/.env.example.
+# Configuration comes from environment variables (or an env_file); see docs/.env.example.
+# On start, the web server container runs the migrations and creates the OAuth keys
+# (see docker/entrypoint.sh; AUTO_MIGRATE=false turns the migrations off).
 
 FROM composer:2@sha256:0c8e663f14c94d07b3c45b175c51f5a14718508f21fe4dd7e54f09488dd0ed71 AS vendor
 WORKDIR /app
@@ -24,5 +26,9 @@ COPY --from=vendor /app /app
 RUN php artisan package:discover --ansi \
     && php artisan filament:assets \
     && chmod -R a+rwX storage bootstrap/cache
+
+COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/app-entrypoint
+ENTRYPOINT ["app-entrypoint"]
+CMD ["--config", "/etc/frankenphp/Caddyfile", "--adapter", "caddyfile"]
 
 EXPOSE 80

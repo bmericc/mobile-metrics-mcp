@@ -91,19 +91,13 @@ secret. The redirect URL is `{APP_URL}/auth/huawei/callback`.
 docker compose up -d --wait
 ```
 
-`--wait` returns once the database is ready and the app is running. Then create the tables and the
-OAuth keys that MCP clients sign tokens with:
+On every start the `app` container creates the storage folders, runs the database migrations
+(waiting for the database if it is still starting) and creates the OAuth keys that MCP clients sign
+tokens with, if they do not exist yet. The worker and the scheduler start once the app is healthy.
+`--wait` returns when everything is up; the first start takes a little longer.
 
-```bash
-docker compose exec app php artisan migrate --force
-```
-
-```bash
-docker compose exec app php artisan passport:keys
-```
-
-The worker and the scheduler may log "table not found" until the migration has run; they restart by
-themselves.
+To run migrations yourself instead, set `AUTO_MIGRATE=false` in `.env` and run
+`docker compose exec app php artisan migrate --force` after each upgrade.
 
 The app now listens on `127.0.0.1:8080`. Point your reverse proxy at it and check that
 `{APP_URL}/login` opens over HTTPS.
@@ -157,11 +151,7 @@ docker compose pull
 docker compose up -d --wait
 ```
 
-```bash
-docker compose exec app php artisan migrate --force
-```
-
-The `:1` tag follows the latest 1.x release. Pin a full version such as `:1.0.1` to upgrade only by
+The new app container runs any new migrations when it starts. The `:1` tag follows the latest 1.x release. Pin a full version such as `:1.0.2` to upgrade only by
 hand. Read [CHANGELOG.md](../CHANGELOG.md) before upgrading.
 
 ## Backups

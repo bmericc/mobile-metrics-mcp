@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'black']))
             ->darkModeBrandLogo(fn () => view('partials.brand-logo', ['height' => 40, 'variant' => 'white']))
             ->brandLogoHeight('40px')
-            ->favicon(asset('images/kalehost_kare_siyah_v2.svg'))
+            ->favicon(asset('images/mobile-metrics-mcp.svg'))
             ->colors([
                 'primary' => Color::Amber,
             ])

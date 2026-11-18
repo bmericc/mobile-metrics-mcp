@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\AppVersion;
 use App\Enums\Store;
 use App\Models\User;
 use App\Models\Workspace;
@@ -15,7 +16,8 @@ class PublicPagesTest extends TestCase
 
     public function test_landing_and_legal_pages_are_public_in_both_languages(): void
     {
-        $this->get('/')->assertOk()->assertSee('Mobile Metrics MCP')->assertSee('/privacy')->assertSee('/terms');
+        $this->get('/')->assertOk()->assertSee('Mobile Metrics MCP')->assertSee('/privacy')->assertSee('/terms')
+            ->assertSee('Mobile Metrics MCP '.AppVersion::CURRENT)->assertDontSee('Kale Host');
         $this->get('/privacy')->assertOk()->assertSee('Gizlilik Politikası')->assertSee('/en/privacy');
         $this->get('/en/privacy')->assertOk()->assertSee('Limited Use')->assertSee('/privacy');
         $this->get('/terms')->assertOk()->assertSee('Kullanım Koşulları');

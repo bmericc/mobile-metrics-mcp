@@ -6,10 +6,22 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-18
+
 ### Added
 
 - Installation guide (`docs/installation.md`, EN/TR) with an example Compose stack built on the
   published image.
+
+### Changed
+
+- The Docker image runs the database migrations and creates the OAuth keys when the web server
+  starts, waiting for the database if needed. Set `AUTO_MIGRATE=false` to run migrations by hand.
+- The example Compose stack starts the worker and the scheduler after the app is healthy.
+- The logo is now "Mobile Metrics MCP" set in Sora (SIL OFL 1.1, self-hosted) and the landing
+  page footer shows the project name
+  and version; the favicon is a neutral chart icon.
+  Kale Host artwork removed.
 
 ## [1.0.1] - 2026-11-18
 
@@ -36,5 +48,6 @@ First public release.
 - Updated `laravel/framework` to 13.43 (fixes the concurrency process output injection advisory
   for versions before 13.40).
 
-[Unreleased]: https://github.com/bmericc/mobile-metrics-mcp/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/bmericc/mobile-metrics-mcp/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/bmericc/mobile-metrics-mcp/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/bmericc/mobile-metrics-mcp/releases/tag/v1.0.1
