@@ -8,7 +8,7 @@ Güvenlik düzeltmeleri yalnızca son sürüme girer. Bildirmeden önce en yeni 
 
 | Sürüm | Destek |
 | --- | --- |
-| 0.1.x (son) | ✓ |
+| 1.x (son) | ✓ |
 | daha eski | ✗ |
 
 ## Açık bildirme

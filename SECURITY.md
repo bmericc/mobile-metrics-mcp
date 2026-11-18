@@ -8,7 +8,7 @@ Security fixes go into the latest release only. Update to the newest image or ta
 
 | Version | Supported |
 | --- | --- |
-| 0.1.x (latest) | ✓ |
+| 1.x (latest) | ✓ |
 | older | ✗ |
 
 ## Reporting a vulnerability

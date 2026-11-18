@@ -6,7 +6,7 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-11-18
+## [1.0.1] - 2026-11-18
 
 First public release.
 
@@ -31,5 +31,5 @@ First public release.
 - Updated `laravel/framework` to 13.43 (fixes the concurrency process output injection advisory
   for versions before 13.40).
 
-[Unreleased]: https://github.com/bmericc/mobile-metrics-mcp/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/bmericc/mobile-metrics-mcp/releases/tag/v0.1.0
+[Unreleased]: https://github.com/bmericc/mobile-metrics-mcp/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/bmericc/mobile-metrics-mcp/releases/tag/v1.0.1
