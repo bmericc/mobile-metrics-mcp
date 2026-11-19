@@ -17,7 +17,11 @@ docker compose exec -T app php artisan filament:assets
 
 # Bind-mount edilen www/ host kullanıcısına ait; php-fpm (www-data) storage ve cache'e yazabilmeli.
 # raw-reports named volume'u ilk oluşturulduğunda root sahipli gelir.
+# filament:assets root olarak çalışıp public/ altına root sahipli dosya yazıyor; bunlar
+# host kullanıcısına geri verilmezse sonraki git pull "Permission denied" ile checkout'un
+# ortasında düşüp çalışan koda yarım güncellenmiş bir ağaç bırakıyor.
 docker compose exec -T -u root app sh -c '
+  chown -R "$(stat -c %u:%g .)" public
   chmod -R a+rwX storage bootstrap/cache
   chown -R www-data:www-data storage/app/private/raw-reports
 '
